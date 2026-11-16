@@ -1,0 +1,1517 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Aerodinámica - Apunte práctico</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <button class="toc-toggle" aria-label="Índice" onclick="document.body.classList.toggle('toc-open')">☰</button>
+  <a class="brand" href="index.html">Aerodinámica · EAC</a>
+  <nav><a href="teorico.html">Teórico</a><a href="practico.html" aria-current="page">Práctico</a></nav>
+</header>
+<aside class="toc"><ol><li class="h2"><a href="#1-herramientas">1. Herramientas</a></li>
+<li class="h3"><a href="#11-software">1.1 Software</a></li>
+<li class="h3"><a href="#12-hardware">1.2 Hardware</a></li>
+<li class="h2"><a href="#2-flujo-de-trabajo-y-geometria">2. Flujo de trabajo y geometría</a></li>
+<li class="h3"><a href="#21-cad-para-cfd-70-del-trabajo">2.1 CAD para CFD (~70 % del trabajo)</a></li>
+<li class="h3"><a href="#22-stl">2.2 STL</a></li>
+<li class="h3"><a href="#23-como-se-consigue-el-cad-de-un-auto-real">2.3 Cómo se consigue el CAD de un auto real</a></li>
+<li class="h2"><a href="#3-el-caso-de-openfoam">3. El caso de OpenFOAM</a></li>
+<li class="h3"><a href="#31-estructura">3.1 Estructura</a></li>
+<li class="h3"><a href="#32-secuencia-de-comandos-caso-3d-del-auto">3.2 Secuencia de comandos (caso 3D del auto)</a></li>
+<li class="h3"><a href="#33-por-que-usar-la-terminal">3.3 Por qué usar la terminal</a></li>
+<li class="h2"><a href="#4-tunel-virtual-condiciones-de-borde-y-malla">4. Túnel virtual, condiciones de borde y malla</a></li>
+<li class="h3"><a href="#41-dominio">4.1 Dominio</a></li>
+<li class="h3"><a href="#42-tipos-de-borde-geometricos">4.2 Tipos de borde geométricos</a></li>
+<li class="h3"><a href="#43-condiciones-de-borde-combos-universales">4.3 Condiciones de borde ("combos universales")</a></li>
+<li class="h3"><a href="#44-turbulencia-de-entrada-y-condicion-inicial">4.4 Turbulencia de entrada y condición inicial</a></li>
+<li class="h3"><a href="#45-snappyhexmesh">4.5 snappyHexMesh</a></li>
+<li class="h3"><a href="#46-capas-limite-layers">4.6 Capas límite (layers)</a></li>
+<li class="h3"><a href="#47-criterios-de-tamano-de-celda">4.7 Criterios de tamaño de celda</a></li>
+<li class="h3"><a href="#48-chequeos-de-malla">4.8 Chequeos de malla</a></li>
+<li class="h2"><a href="#5-setup-numerico">5. Setup numérico</a></li>
+<li class="h3"><a href="#51-eleccion-del-solver-arbol-de-simflow">5.1 Elección del solver (árbol de SimFlow)</a></li>
+<li class="h3"><a href="#52-esquemas-fvschemes">5.2 Esquemas (fvSchemes)</a></li>
+<li class="h3"><a href="#53-solvers-lineales-y-tolerancias-fvsolution">5.3 Solvers lineales y tolerancias (fvSolution)</a></li>
+<li class="h3"><a href="#54-bucles-de-pimplefoam-la-mamushka">5.4 Bucles de pimpleFoam (la "mamushka")</a></li>
+<li class="h3"><a href="#55-arranque-suave-soft-start-las-simulaciones-explotan-siempre">5.5 Arranque suave (soft start): las simulaciones explotan siempre</a></li>
+<li class="h3"><a href="#56-paso-de-tiempo-y-tiempo-simulado-transitorios">5.6 Paso de tiempo y tiempo simulado (transitorios)</a></li>
+<li class="h3"><a href="#57-monitores-de-fuerzas">5.7 Monitores de fuerzas</a></li>
+<li class="h2"><a href="#6-convergencia-en-la-practica">6. Convergencia en la práctica</a></li>
+<li class="h3"><a href="#61-checklist-estacionario">6.1 Checklist (estacionario)</a></li>
+<li class="h3"><a href="#62-lectura-del-log">6.2 Lectura del log</a></li>
+<li class="h3"><a href="#63-transitorios">6.3 Transitorios</a></li>
+<li class="h3"><a href="#64-falta-tiempo-o-falta-malla">6.4 ¿Falta tiempo o falta malla?</a></li>
+<li class="h3"><a href="#65-metodo-de-trabajo">6.5 Método de trabajo</a></li>
+<li class="h2"><a href="#7-postproceso-en-paraview">7. Postproceso en ParaView</a></li>
+<li class="h3"><a href="#71-basico">7.1 Básico</a></li>
+<li class="h3"><a href="#72-herramientas">7.2 Herramientas</a></li>
+<li class="h3"><a href="#73-streamlines">7.3 Streamlines</a></li>
+<li class="h3"><a href="#74-organizacion">7.4 Organización</a></li>
+<li class="h2"><a href="#8-paralelismo">8. Paralelismo</a></li>
+<li class="h2"><a href="#9-xfoil-y-airfoil-tools">9. XFOIL y Airfoil Tools</a></li>
+<li class="h3"><a href="#91-airfoil-tools-airfoiltoolscom">9.1 Airfoil Tools (airfoiltools.com)</a></li>
+<li class="h3"><a href="#92-xfoil-linea-de-comandos">9.2 XFOIL (línea de comandos)</a></li>
+<li class="h3"><a href="#93-alerones-de-varios-elementos-makewing-simflow">9.3 Alerones de varios elementos: makeWing + SimFlow</a></li>
+<li class="h2"><a href="#10-carwingpositioner-mustang-studio">10. CarWingPositioner / Mustang Studio</a></li>
+<li class="h3"><a href="#101-geometria">10.1 Geometría</a></li>
+<li class="h3"><a href="#102-tunel-y-malla">10.2 Túnel y malla</a></li>
+<li class="h3"><a href="#103-setup-s18-el-de-referencia-para-los-trabajos">10.3 Setup S18 (el de referencia para los trabajos)</a></li>
+<li class="h3"><a href="#104-ejecucion-y-exportacion">10.4 Ejecución y exportación</a></li>
+<li class="h2"><a href="#11-casos-del-curso-y-resultados-de-referencia">11. Casos del curso y resultados de referencia</a></li>
+<li class="h3"><a href="#111-venturi-2d-moodle">11.1 Venturi 2D (Moodle)</a></li>
+<li class="h3"><a href="#112-naca-0012-modulo-airfoil-de-simflow">11.2 NACA 0012 (módulo Airfoil de SimFlow)</a></li>
+<li class="h3"><a href="#113-cilindro-2d-transitorio-snappyhexmesh-pimplefoam-laminar">11.3 Cilindro 2D transitorio (snappyHexMesh + pimpleFoam, laminar)</a></li>
+<li class="h3"><a href="#114-mustang-2d-con-apendices-moodle-unidad-4">11.4 Mustang 2D con apéndices (Moodle, Unidad 4)</a></li>
+<li class="h3"><a href="#115-validacion-jn153-contra-xfoil-0-re-10">11.5 Validación JN153 contra XFOIL (α = 0°, Re = 10⁶)</a></li>
+<li class="h3"><a href="#116-mustang-3d-mustang-studio-setup-s18">11.6 Mustang 3D (Mustang Studio, setup S18)</a></li>
+<li class="h3"><a href="#117-aleron-main-flap-2d-simflow-makewing">11.7 Alerón main + flap 2D (SimFlow, makeWing)</a></li>
+<li class="h2"><a href="#12-ejercicios-y-trabajos-propuestos">12. Ejercicios y trabajos propuestos</a></li></ol></aside>
+<main><h1>Aerodinámica - Apunte práctico</h1>
+<p><strong>Cómo se hace</strong> una simulación CFD en el curso, organizado por etapa: herramientas, geometría, túnel virtual, malla, setup numérico, convergencia, postproceso, XFOIL, Mustang Studio y paralelismo. Al final, los casos del curso con sus resultados de referencia.</p>
+<blockquote>
+<p>Armado a partir de los resúmenes de las clases 1 a 14, que a su vez salen de las transcripciones automáticas, y de las filminas y los enunciados del TP 2026. Lo repetido entre clases se fusionó, y lo que se completó en otra clase se juntó en un solo lugar. El &quot;por qué&quot; de cada cosa está en el <a href="teorico.html">Aerodinámica - Apunte teórico</a>; acá se lo referencia con &quot;(T §n)&quot;.</p>
+</blockquote>
+<hr>
+<h2 id="1-herramientas" tabindex="-1">1. Herramientas</h2>
+<h3 id="11-software" tabindex="-1">1.1 Software</h3>
+<table>
+<thead>
+<tr>
+<th>Herramienta</th>
+<th>Para qué</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OpenFOAM</strong></td>
+<td>El solver CFD</td>
+<td>No tiene interfaz gráfica: se trabaja con archivos y terminal. <strong>El curso usa la rama <a href="http://openfoam.com">openfoam.com</a></strong> (versiones año-mes: 2406, 2412, 2506…), que tiene mejor inserción de capas en snappyHexMesh y es la base de SimFlow. La rama <a href="http://openfoam.org">openfoam.org</a> (versiones 11, 12, 13) es mejor en remallado móvil (motores). Paralelización sin límite de licencia</td>
+</tr>
+<tr>
+<td><strong>SimFlow</strong></td>
+<td>Interfaz gráfica sobre OpenFOAM</td>
+<td>La versión gratuita llega a <strong>200.000 celdas</strong> (ahora limita por nodos, que es más restrictivo) y corre <strong>en serie</strong>. Instala OpenFOAM nativo para Windows y ParaView 5.12. La 5.1 se puede instalar junto a la anterior. Las pantallas cambian entre versiones (<em>Setup</em> en la 5.0, <em>Simulation</em> en la 5.1), pero se llega a lo mismo</td>
+</tr>
+<tr>
+<td><strong>ParaView</strong></td>
+<td>Postproceso</td>
+<td>Gratuito, del Laboratorio Nacional Sandia; mejor que el postprocesador de muchos comerciales</td>
+</tr>
+<tr>
+<td><strong>CarWingPositioner / Mustang Studio</strong></td>
+<td>App de Horacio para el caso del Mustang con ala</td>
+<td>Usa el OpenFOAM y el ParaView de SimFlow, <strong>sin límite de celdas y en paralelo</strong>. Está en <span class="nolink">Software/</span>. Ver §10</td>
+</tr>
+<tr>
+<td><strong>App de capas límite</strong> (OpenFOAMLayerDesigner)</td>
+<td>Diseñar las capas y estimar el y⁺</td>
+<td>Portable, en <span class="nolink">Software/</span>. Ver §4.6</td>
+</tr>
+<tr>
+<td><strong>XFOIL 6.99</strong> (MIT)</td>
+<td>Polares de perfiles 2D en segundos</td>
+<td>Ver §9</td>
+</tr>
+<tr>
+<td><strong>Python + VS Code</strong> (o MATLAB, Octave, Jupyter/Colab, incluso Excel)</td>
+<td>Scripts de performance, barridos y gráficos</td>
+<td>Los scripts del curso están en el Moodle, en <code>.m</code>, <code>.py</code> e <code>.ipynb</code></td>
+</tr>
+<tr>
+<td>Editor de texto (<strong>Sublime Text</strong>)</td>
+<td>Editar diccionarios de OpenFOAM</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Otras interfaces y servicios sobre OpenFOAM:</strong>
+<ul>
+<li><strong>SimScale</strong> (en la nube, 3.000 horas-núcleo gratis);</li>
+<li>HELYX (ENGYS, que da soporte a equipos de F1);</li>
+<li>Visual-CFD;</li>
+<li>TotalSim (~125 USD por simulación de motorsport).</li>
+</ul>
+</li>
+<li><strong>Comerciales:</strong>
+<ul>
+<li>Fluent, CFX y STAR-CCM+: ~100.000 USD/año, con licencia por núcleo;</li>
+<li>SolidWorks Flow y Autodesk CFD: ~2.000–10.000 USD/año.</li>
+<li>SolidWorks Flow Simulation <strong>elige solo el modelo de turbulencia</strong> y no deja cambiarlo. Una buena práctica es comparar el mismo caso en SolidWorks y en SimFlow.</li>
+</ul>
+</li>
+<li><strong>OpenFOAM por terminal en Windows:</strong>
+<ul>
+<li>se puede usar el OpenFOAM que instala SimFlow, pero puede hacer falta configurar variables de entorno (si no, &quot;<em>blockMesh no se reconoce como comando</em>&quot;);</li>
+<li>alternativas: <strong>WSL</strong> (recomendado en Windows 11) o blueCFD.</li>
+</ul>
+</li>
+<li><strong>IA:</strong> sirve para acelerar lo que ya se entiende (scripts, diccionarios). Si uno duda del resultado, no sirve.</li>
+</ul>
+<h3 id="12-hardware" tabindex="-1">1.2 Hardware</h3>
+<ul>
+<li><strong>Mínimo para el curso:</strong> 8 GB de RAM, un i5 de unos 6–7 años y ~100 GB libres. Con ~16–64 GB se trabaja cómodo.</li>
+<li><strong>RAM: ~1–2 GB por millón de celdas.</strong> Una PC de 8–16 GB da para ~8 millones como máximo, porque el sistema y el navegador consumen mucho.</li>
+<li><strong>El cuello de botella es el ancho de banda de memoria</strong>, que comparten todos los núcleos.
+<ul>
+<li>En un i9, 4 corridas en paralelo tardaban lo mismo que una; con 5, todas tardaban un 50 % más.</li>
+<li><strong>Con dos módulos de RAM, poner uno en cada canal:</strong> las PC de escritorio tienen 4 ranuras pero 2 canales.</li>
+</ul>
+</li>
+<li><strong>Usar núcleos físicos, no hilos.</strong> El <em>hyperthreading</em> no suma en CFD.
+<ul>
+<li>En i7, i9 y Threadripper hay que probar 2, 4, 8… procesos y ver cuándo deja de acelerar.</li>
+<li>Los Intel nuevos mezclan núcleos de rendimiento y de bajo consumo. <strong>AMD tiene núcleos homogéneos;</strong> un Threadripper &quot;anda muy bien&quot; para una PC propia. Para CFD en serio, Xeon o EPYC.</li>
+</ul>
+</li>
+<li><strong>GPU:</strong> no se usa para el cálculo. <strong>Sí para el postproceso:</strong> alcanza con una placa dedicada chica, porque con la integrada ParaView se traba.</li>
+<li><strong>Tiempos de referencia:</strong>
+<ul>
+<li>1 millón de celdas tarda ~1 h en resolverse;</li>
+<li>mallar 100 millones lleva ~2 h en 64 núcleos;</li>
+<li>un auto con detalle necesita ~60 núcleos y un día.</li>
+<li>En un solo procesador, un auto completo puede tardar ~20 días.</li>
+</ul>
+</li>
+<li><strong>Cómputo externo:</strong>
+<ul>
+<li>nube (AWS, Azure, Google Cloud), que es posible pero complejo de configurar;</li>
+<li>cluster <em>spot</em> (~15 USD por corrida de un auto completo, aunque te pueden interrumpir);</li>
+<li>un nodo propio (~10.000–20.000 USD);</li>
+<li>clusters académicos (suelen pedir un proyecto).</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="2-flujo-de-trabajo-y-geometria" tabindex="-1">2. Flujo de trabajo y geometría</h2>
+<p><strong>CAD general → CAD para CFD → preproceso → mallado → simulación → postproceso</strong></p>
+<h3 id="21-cad-para-cfd-70-del-trabajo" tabindex="-1">2.1 CAD para CFD (~70 % del trabajo)</h3>
+<ul>
+<li><strong>Limpiar:</strong>
+<ul>
+<li>quitar tornillos y roscas;</li>
+<li>cerrar agujeros;</li>
+<li>elegir un <strong>tamaño característico</strong> (p. ej. 2–5 mm) y fusionar los detalles más chicos;</li>
+<li>pasar de sólido a superficie.</li>
+</ul>
+</li>
+<li><strong>Las chapas se simulan sin espesor</strong>, como una sola superficie (una de las caras, no la superficie media). Un Gurney tiene que ser una sola pieza bien dibujada.</li>
+<li><strong>Para dibujar:</strong>
+<ul>
+<li>SolidWorks, CATIA, Solid Edge o NX (exportando a STL);</li>
+<li><strong>FreeCAD</strong> (desde la 1.0) y <strong>Blender</strong>, que se pueden scriptar con Python para geometrías paramétricas;</li>
+<li>Rhino, Alias, <strong>ANSA</strong>.</li>
+</ul>
+</li>
+<li><strong>Impresión 3D:</strong> permite pasar rápido de la STL a la pieza para probar.</li>
+</ul>
+<h3 id="22-stl" tabindex="-1">2.2 STL</h3>
+<ul>
+<li><strong>Es una lista de triángulos</strong> (<em>facets</em>), cada uno con su normal y sus 3 vértices. <strong>No tiene unidades.</strong>
+<ul>
+<li>Abriéndola en un editor de texto se ve la escala: valores de ~0,5 indican metros.</li>
+<li><strong>En el curso, siempre en milímetros.</strong> Para reescalar se usa <code>surfaceTransformPoints</code> (×1000 desde metros, ×25,4 desde pulgadas).</li>
+</ul>
+</li>
+<li><strong>Tiene que ser cerrada y orientada</strong> (<em>manifold</em>). Se chequea con <code>surfaceCheck</code>.
+<ul>
+<li>En la versión que se vio en clase, Mustang Studio exigía <strong>un único cuerpo cerrado por STL</strong> (un deflector como segundo cuerpo hacía fallar el chequeo).</li>
+</ul>
+</li>
+<li><strong>Silueta propia para Mustang Studio:</strong> un contorno extruido <strong>centrado en y = 0</strong> (de −500 a 500 mm), con tapas y la superficie refinada en las aristas.</li>
+<li><strong>La malla de la STL no es la malla del CFD.</strong> Pero si sus triángulos son mucho más grandes que las celdas de superficie, aparece un <strong>ruido &quot;telaraña&quot;</strong> que sigue las aristas de los triángulos.
+<ul>
+<li>Hay que exportarla más fina, controlando el <strong>ángulo entre normales de triángulos vecinos</strong> (refinamiento por curvatura). SolidWorks tiende a exportar STL muy gruesas.</li>
+<li>El efecto sobre las fuerzas totales es menor: el ruido se cancela.</li>
+</ul>
+</li>
+<li><strong>En producción</strong> se usa una sola STL con muchos <code>solid … endsolid</code>, uno por zona, para refinar cada una por separado.</li>
+</ul>
+<h3 id="23-como-se-consigue-el-cad-de-un-auto-real" tabindex="-1">2.3 Cómo se consigue el CAD de un auto real</h3>
+<ol>
+<li><strong>Escaneo</strong> (1–2 días): da una nube de puntos con ruido. En superficies lisas de un solo color el escáner se pierde, así que se usa talco o cinta de papel. Se escanea por partes.
+<ul>
+<li>Hay escáneres dignos por ~1.000–1.500 USD (p. ej. Einstar).</li>
+</ul>
+</li>
+<li><strong>Alinear las sub-nubes:</strong> de unas 25 combinaciones posibles, una o dos funcionan bien.</li>
+<li><strong>STL de la nube completa:</strong> hasta ~400 GB de RAM en un auto de TC (se puede usar swap en SSD).</li>
+<li><strong>Ingeniería inversa:</strong> &quot;dibujar encima&quot; de la STL sucia (Geomagic: parches y superficies) hasta tener <strong>STEP o IGES</strong>.</li>
+<li><strong>Hermanar con los CAD del equipo:</strong> piso, llantas, cardán, que ya existen en CAD.</li>
+<li><strong>Adaptarlo para CFD.</strong></li>
+</ol>
+<ul>
+<li><strong>Costo:</strong> ~100–200 h de ingeniería, ~5.000 USD. Se suele <strong>tercerizar</strong> (en Argentina, Technosoft y Solga Ingeniería).</li>
+<li><strong>Pedir siempre STEP o IGES, nunca STL.</strong></li>
+<li><strong>Alternativa barata:</strong> dibujar a mano alzada midiendo el auto, &quot;en una semana se tiene algo aceptable&quot;.</li>
+</ul>
+<hr>
+<h2 id="3-el-caso-de-openfoam" tabindex="-1">3. El caso de OpenFOAM</h2>
+<h3 id="31-estructura" tabindex="-1">3.1 Estructura</h3>
+<pre><code>caso/
+├── 0/          condiciones iniciales y de borde (U, p, k, omega, nut)
+├── constant/   malla (polyMesh/), STL (triSurface/), transportProperties (ν), turbulenceProperties
+├── system/     controlDict, fvSchemes (discretización), fvSolution (solvers), blockMeshDict, snappyHexMeshDict
+└── caso.foam   archivo vacío para abrirlo en ParaView (touch caso.foam)
+</code></pre>
+<ul>
+<li><strong><code>polyMesh</code></strong> contiene points, faces, owner, neighbour y boundary. Casi nunca hace falta tocarlo.</li>
+<li><strong>En SimFlow, <em>Case → Open folder</em></strong> muestra esta misma carpeta.
+<ul>
+<li>SimFlow 5.1 no exporta el caso.</li>
+<li><strong>Después de darle <em>Simulate</em>, se pierden los diccionarios de malla.</strong></li>
+</ul>
+</li>
+<li><strong>&quot;En OpenFOAM nunca se escribe un diccionario de cero:</strong> se modifica uno que ya funciona&quot; (p. ej. con Ctrl+H, cambiar <em>car</em> por <em>moto</em>). Los diccionarios no perdonan: una llave o un punto y coma que falte, o un <code>wall</code> mal escrito, y no funciona.</li>
+<li><strong>Referencias:</strong> la User Guide de OpenFOAM y el libro en HTML de CFD Direct.</li>
+</ul>
+<h3 id="32-secuencia-de-comandos-caso-3d-del-auto" tabindex="-1">3.2 Secuencia de comandos (caso 3D del auto)</h3>
+<ol>
+<li><code>surfaceCheck</code>: STL cerradas y orientadas.</li>
+<li><code>surfaceFeatureExtract</code>: marca las aristas donde el ángulo entre normales supera ~30°, para que snappy las mantenga vivas.</li>
+<li><code>blockMesh</code>: el túnel.</li>
+<li><code>decomposePar</code>.</li>
+<li><code>snappyHexMesh -parallel</code>.</li>
+<li><code>checkMesh</code> y <code>reconstructParMesh</code>.</li>
+<li>Volver a descomponer.</li>
+<li><code>potentialFoam</code>: la condición inicial.</li>
+<li><code>simpleFoam -parallel</code>.</li>
+<li>Reconstruir y exportar.</li>
+</ol>
+<ul>
+<li><strong>En 2D,</strong> después de snappy va <code>extrudeMesh</code>, para dejar una sola capa de celdas y tapas <code>empty</code>.</li>
+<li><strong>Scripts típicos:</strong> <code>Allrun</code> (corre todo) y <code>Allclean</code> (borra). Mustang Studio genera un <strong><code>Allrun.bat</code></strong> (con PowerShell) y una guía HTML con cada comando (§10.4).</li>
+<li><strong><code>renumberMesh</code></strong> después de mallar (§4.8).</li>
+</ul>
+<h3 id="33-por-que-usar-la-terminal" tabindex="-1">3.3 Por qué usar la terminal</h3>
+<ul>
+<li><strong>Las interfaces solo escriben diccionarios y ejecutan comandos</strong>, y filtran los parámetros que casi nunca se cambian. Mustang Studio pesa ~6 MB: &quot;es una carcasa&quot;.</li>
+<li><strong>La terminal permite automatizar:</strong>
+<ul>
+<li>un <strong>punto</strong> es una simulación;</li>
+<li>una <strong>curva</strong>, ~10 (p. ej. C_L contra α);</li>
+<li>un <strong>mapa</strong>, ~100 (altura delantera contra trasera: el mapa aerodinámico);</li>
+<li>después vienen la base de datos, las redes neuronales y la optimización.</li>
+</ul>
+</li>
+<li><strong>Con autos de 60–100 millones de celdas, cien corridas es inviable.</strong> Con el ala del modelo simplificado sí.</li>
+</ul>
+<hr>
+<h2 id="4-tunel-virtual-condiciones-de-borde-y-malla" tabindex="-1">4. Túnel virtual, condiciones de borde y malla</h2>
+<h3 id="41-dominio" tabindex="-1">4.1 Dominio</h3>
+<ul>
+<li><strong>No se simula un túnel real, sino la ruta abierta (<em>open road</em>).</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Dirección</th>
+<th>Recomendado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Adelante</td>
+<td>~10 L</td>
+</tr>
+<tr>
+<td>Atrás</td>
+<td>~15–20 L (70–100 m para un auto), por la estela</td>
+</tr>
+<tr>
+<td>Costados</td>
+<td>~5 L</td>
+</tr>
+<tr>
+<td>Arriba (auto apoyado)</td>
+<td>~10 L</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>El objeto va en el primer tercio o cuarto del largo.</strong> Un cilindro o un perfil van centrados en el corte transversal; el auto va <strong>apoyado en el piso</strong>.</li>
+<li><strong>Factor de bloqueo</strong> (área frontal / sección del túnel) <strong>&lt; 5 %.</strong> En CFD es barato cumplirlo (el Mustang en un túnel de 50 × 25 m da ~0,17 %); los túneles reales llegan a 20–30 %.</li>
+<li><strong>Un techo bajo</strong> &quot;aplasta&quot; las líneas de corriente y sube la presión adelante. Si los bordes &quot;horizontalizan&quot; el flujo de forma antinatural, hay que <strong>agrandar el dominio</strong>.</li>
+<li><strong>Simetría lateral:</strong> se simula la mitad, con un borde <code>symmetryPlane</code> (T §12.6). <strong>Reduce la malla y el tiempo a la mitad.</strong> No vale con guiñada.</li>
+<li><strong>2D en OpenFOAM:</strong> la malla siempre es 3D, una &quot;feta&quot; de una celda de espesor con las dos tapas <strong><code>empty</code></strong>.
+<ul>
+<li>La profundidad no importa: equivale a dos placas infinitas, no a un tubo.</li>
+<li>Un tubo circular necesita 3D o axisimetría.</li>
+</ul>
+</li>
+</ul>
+<h3 id="42-tipos-de-borde-geometricos" tabindex="-1">4.2 Tipos de borde geométricos</h3>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>patch</code></td>
+<td>Entrada y salida. Es más barato que <code>wall</code> porque no calcula la distancia a la pared</td>
+</tr>
+<tr>
+<td><code>wall</code></td>
+<td>Paredes (auto, perfil, piso; también el techo y el piso del &quot;plato&quot; 2D)</td>
+</tr>
+<tr>
+<td><code>empty</code></td>
+<td>Tapas en 2D</td>
+</tr>
+<tr>
+<td><code>symmetryPlane</code></td>
+<td>Plano de simetría</td>
+</tr>
+<tr>
+<td><code>processor</code></td>
+<td>Frontera entre subdominios al correr en paralelo (<code>decomposePar</code> la crea sola)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Asignar cada cara de la malla base a su grupo</strong> (−x entrada, +x salida, etc.). Si no, todo queda en un solo grupo de bordes y no se pueden poner condiciones distintas. Es un error común.</li>
+</ul>
+<h3 id="43-condiciones-de-borde-combos-universales" tabindex="-1">4.3 Condiciones de borde (&quot;combos universales&quot;)</h3>
+<table>
+<thead>
+<tr>
+<th>Borde</th>
+<th>U</th>
+<th>p</th>
+<th>k, ω</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Entrada</strong></td>
+<td><em><strong>fixedValue</strong></em> = velocidad del auto, <strong>en x</strong></td>
+<td><em>zeroGradient</em> (o <em>freestream pressure</em> en el módulo Airfoil)</td>
+<td>Intensidad y escala de longitud (§4.4)</td>
+</tr>
+<tr>
+<td><strong>Salida</strong></td>
+<td><em><strong>pressureInletOutletVelocity</strong></em> (o <em>inletOutlet</em>)</td>
+<td><strong><em>fixedValue</em> 0</strong> (referencia)</td>
+<td><em>inletOutlet</em> / <em>zeroGradient</em></td>
+</tr>
+<tr>
+<td><strong>Auto / perfil</strong></td>
+<td><em><strong>noSlip</strong></em></td>
+<td><em>zeroGradient</em></td>
+<td><em><strong>standard wall functions</strong></em></td>
+</tr>
+<tr>
+<td><strong>Piso del túnel (auto)</strong></td>
+<td><strong>Pared móvil a la velocidad del auto</strong></td>
+<td><em>zeroGradient</em></td>
+<td><em>wall functions</em></td>
+</tr>
+<tr>
+<td><strong>Techo y laterales</strong></td>
+<td><em><strong>slip</strong></em></td>
+<td><em>zeroGradient</em></td>
+<td><em>zeroGradient</em></td>
+</tr>
+<tr>
+<td><strong>Tapas 2D</strong></td>
+<td><em>empty</em></td>
+<td><em>empty</em></td>
+<td><em>empty</em></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Entrada:</strong> 10–20 m delante del auto, todo el aire va a la velocidad del auto. <strong>Se prefiere fijar la velocidad,</strong> y no un Δp, para controlar la normalización.
+<ul>
+<li><strong>Error típico:</strong> usar <em><strong>surfaceNormalFixedValue</strong></em> en un <em>inlet</em> curvo (el arco del módulo Airfoil). La velocidad apunta al centro en cada cara y da C_L ≈ 4.</li>
+</ul>
+</li>
+<li><strong>Salida:</strong> <em>zeroGradient</em> para la velocidad (usa el valor de la última celda), para no tener que simular 300 m de estela.
+<ul>
+<li><em>inletOutlet</em> y <em>pressureInletOutletVelocity</em> se comportan como pared si el flujo quiere entrar, y son estables en los arranques.</li>
+<li>El <em>zeroGradient</em> puro es inestable si el flujo se invierte.</li>
+</ul>
+</li>
+<li><strong>Piso móvil:</strong> bajo el splitter el aire puede ir al doble de la velocidad del auto y el piso lo frena; en la estela lo acelera. Con viento habría un desfase entre la velocidad del aire y la del piso y las ruedas (casi nunca se simula).</li>
+<li><strong>Techo y laterales con <em>slip</em></strong> (velocidad normal nula): ante la duda, es la mejor opción. Deja que el flujo vaya algo más rápido sin perder energía por corte y permite dominios más chicos.</li>
+<li><strong>En la pared:</strong> el <em>zeroGradient</em> de p mejora al achicar la primera celda; lo único seguro es u = 0. <em>fixedValue</em> en k y ω sería para resolver la capa límite, que no se hace.
+<ul>
+<li><strong>Dejar lo predeterminado, <em>standard wall functions</em>.</strong> La versión <em>low-Re</em> no mostró ser mejor.</li>
+</ul>
+</li>
+<li><strong>Ruedas</strong> (cuando se modelan): condición rotante con velocidad angular, centro y eje (cuidado con el <em>camber</em>). Los rayos de las llantas, que empujan el aire, necesitan <strong>MRF</strong>.</li>
+<li><strong>Radiador:</strong> como <strong>medio poroso</strong> (<em>porosity</em> / <em>cell zones</em>), sin mallar las aletas.</li>
+<li><strong>Presión de referencia:</strong> solo hace falta si no hay entradas ni salidas (una cavidad cerrada).</li>
+</ul>
+<h3 id="44-turbulencia-de-entrada-y-condicion-inicial" tabindex="-1">4.4 Turbulencia de entrada y condición inicial</h3>
+<ul>
+<li><strong>Intensidad turbulenta: 1–5 %</strong> para autos en pista; el Mustang (S18) usa 10 %.
+<ul>
+<li>Un estudio de Juan y Horacio con el DrivAer mostró que la sensibilidad es grande entre 0 y 1 %, se satura entre 1 y 5 % y a 10 % da casi lo mismo que a 5 %. Afecta sobre todo al frente del auto.</li>
+</ul>
+</li>
+<li><strong>Dos recetas</strong> (la física está en T §12.6):
+<ol>
+<li><strong>I + longitud turbulenta ℓ_t:</strong> k = 3/2·(I·U∞)²; ω = √k/(C_μ^(1/4)·ℓ_t) o ε = C_μ^(3/4)·k^(3/2)/ℓ_t.
+<ul>
+<li>En un <strong>perfil aislado</strong> se usó ~7 % de la cuerda (0,07 m para 1 m).</li>
+<li><strong>En un auto, no usar 7 % del largo</strong> (~350 mm): da una ν_t &quot;infernal&quot;. Las ℓ_t reales son de milímetros.</li>
+</ul>
+</li>
+<li><strong>I + <em>viscosity ratio</em> VR = ν_t/ν (la que recomienda Horacio):</strong> k = 3/2·(I·U∞)²; ν_t = VR·ν; <strong>ω = k/ν_t</strong> o ε = C_μ·k²/ν_t. ν_t no se impone: la calcula OpenFOAM.</li>
+</ol>
+</li>
+<li><strong>Valores típicos (aire):</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Entorno</th>
+<th>I</th>
+<th>VR = ν_t/ν</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Túnel &quot;silencioso&quot;</td>
+<td>0,05–0,2 %</td>
+<td>1–5</td>
+</tr>
+<tr>
+<td>Externa en campo abierto</td>
+<td>0,5–1 %</td>
+<td>5–20</td>
+</tr>
+<tr>
+<td>Competición en pista</td>
+<td>1–5 %</td>
+<td>20–200</td>
+</tr>
+<tr>
+<td>Conductos</td>
+<td>5–10 %</td>
+<td>100–1000</td>
+</tr>
+<tr>
+<td>Estela inmediata (auto detrás de otro)</td>
+<td>10–20 %</td>
+<td>300–3000</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Piso práctico: ~1 % y VR 10.</strong> Más abajo, la corrida se vuelve transitoria y no converge (T §12.6).</li>
+<li><strong>Ejemplo (Mustang, I = 10 %, VR = 500, U = 55 m/s):</strong> k = 45,375 m²/s² y ω = 6050 s⁻¹. Son los valores del enunciado del TP.</li>
+<li><strong>Calculadora de CFD-Online:</strong> <a href="https://www.cfd-online.com/Tools/turbulence.php">https://www.cfd-online.com/Tools/turbulence.php</a>. Con U, I y VR (o ℓ_t) devuelve k, ε y ω (usa C_μ = 0,09 y ν = 1,5×10⁻⁵ m²/s).</li>
+<li><strong>Condición inicial:</strong> U = la de la entrada en todo el dominio y p = 0. Con k y ω razonables la solución los &quot;olvida&quot;.
+<ul>
+<li><strong>Inicializar con flujo potencial</strong> (<code>potentialFoam</code>) es casi gratis y da mejor arranque.</li>
+<li>Poner −U sería como arrancar un motor al revés.</li>
+</ul>
+</li>
+<li><strong>Parametrizar:</strong> definir <code>U</code>, <code>Uinf</code>, <code>cuerda</code> y <code>Re = Uinf·cuerda/1.51e-5</code> en <em>Parameters</em> (SimFlow) y usarlos en todos lados. Así el caso queda paramétrico.</li>
+<li><strong>Error típico:</strong> cambiar la velocidad de entrada y olvidarse de cambiarla en la <strong>condición inicial</strong> y en la <strong>U∞ de los monitores</strong>. La normalización queda mal (en clase dio C_D ≈ 0,004). <strong>Siempre hay tres lugares.</strong></li>
+</ul>
+<h3 id="45-snappyhexmesh" tabindex="-1">4.5 snappyHexMesh</h3>
+<ul>
+<li><strong><code>blockMesh</code></strong> es estructurado (bloques regulares; lo usa el módulo Airfoil). <strong>snappyHexMesh</strong> es el mallador no estructurado, <strong>el mismo que se usa para un auto de TC</strong>.</li>
+<li><strong>Tres etapas:</strong>
+<ol>
+<li><strong>Castellated (castillado):</strong> la caja base se divide en <strong>cubos</strong>. Los que cortan la STL se subdividen 2×2×2 por nivel, y se eliminan las celdas del lado que no interesa según el <em><strong>location in mesh</strong></em>.
+<ul>
+<li>Ese punto tiene que quedar fuera del cuerpo y dentro del túnel (p. ej. a 10 m de altura). Si cae sobre la piel de la STL, da error.</li>
+</ul>
+</li>
+<li><strong>Snap:</strong> los vértices se mueven hasta la STL y se suavizan.</li>
+<li><strong>Layers:</strong> la malla se empuja hacia adentro para extruir las capas. Si se rompen celdas, snappy deja zonas sin capas: <strong>es su talón de Aquiles</strong>. Aun así, es el mallador industrial estándar de OpenFOAM.</li>
+</ol>
+</li>
+<li><strong>Hay dos juegos de controles de calidad:</strong> el <code>minTetQuality</code> tiene que ser bajo para el ajuste y &quot;infinitamente negativo&quot; (desactivado) para las capas.</li>
+<li><strong>Niveles: h = H₀/2ᴸ</strong> (H₀ es la celda base y L el nivel).
+<ul>
+<li>En 2D cada nivel multiplica las celdas por 4; en 3D, por 8.</li>
+<li>Ejemplos: con base 1 m, nivel 6 ≈ 15 mm y nivel 9 ≈ 2 mm. Con base 2 m, nivel 6 ≈ 31 mm.</li>
+</ul>
+</li>
+<li><strong>Entre niveles, snappy mete ~3–5 celdas de transición.</strong></li>
+<li><strong>Celdas base cúbicas:</strong> buscar divisiones enteras. Por ejemplo, 100 × 50 × 26 m con 2 m da 50 × 25 × 13.</li>
+<li><strong>Mínimo, máximo y <em>feature</em>:</strong> el máximo se aplica donde la curvatura supera un umbral; <em>feature</em> va en las aristas.
+<ul>
+<li><strong>Usar el mismo nivel en los tres:</strong> los saltos automáticos de nivel hacen que las capas relativas cambien de golpe, y se colapsan.</li>
+<li>En SimFlow, al subir el mínimo sube el máximo, pero al bajarlo no.</li>
+</ul>
+</li>
+<li><strong>Cajas de refinamiento</strong> (<em>refinement</em>, <em>inside</em>):
+<ul>
+<li><strong>telescópicas</strong> (p. ej. niveles 4, 3, 2), extendidas sobre todo <strong>hacia atrás</strong>, para la estela;</li>
+<li>en 2D tienen que <strong>cubrir todo el ancho del plato</strong> (si no, no encierran celdas);</li>
+<li>una celda dentro de varias cajas toma el nivel <strong>máximo</strong>.</li>
+<li>El refinamiento por distancia existe, pero es equidistante en todas las direcciones.</li>
+</ul>
+</li>
+<li><strong>Si un elemento chico no malla:</strong> la base es demasiado gruesa (un triángulo entero dentro de un cubo base no se detecta).
+<ul>
+<li>Se multiplican las divisiones de la base (p. ej. ×8) y se bajan los niveles en la misma medida.</li>
+<li>Conviene que cada elemento esté en su propia STL, con su nivel.</li>
+</ul>
+</li>
+</ul>
+<h3 id="46-capas-limite-layers" tabindex="-1">4.6 Capas límite (<em>layers</em>)</h3>
+<ul>
+<li><strong>Lo clave es el <em>overall</em></strong> (la altura total de la pila respecto de la celda de superficie): <strong>apuntar a ≤ 1</strong>.
+<ul>
+<li>Debajo del auto o entre el ala y el baúl, la malla no tiene adónde empujar.</li>
+<li>Ejemplos: 3 capas suaves dan 0,77 y 4 capas, 1,15. Con 10 capas y crecimiento 1,2 da 2,59, que es demasiado.</li>
+<li>En superficies convexas y despejadas (cilindro) se tolera 2–5. En geometrías cóncavas, las capas de paredes opuestas chocan.</li>
+</ul>
+</li>
+<li><strong>Modo que usa Horacio en industria:</strong> primera capa <strong>relativa</strong> (0,1–0,2 de la celda de superficie) + <em><strong>smooth transition to bulk</strong></em> (calcula el crecimiento para que la última capa empalme con la celda interior; para 5 capas da ~1,38).
+<ul>
+<li>Ejemplo de un salto incoherente: 5 capas al 20 % con crecimiento 1,25 dejan la última en ½ de la celda interior.</li>
+</ul>
+</li>
+<li><strong>Relación de aspecto</strong> de la primera capa: 5 es excelente; en industria, 10–100 (excepcionalmente 200 para y⁺ &lt; 1).</li>
+<li><strong>En SimFlow y Mustang Studio hay que tildar <em>Add prism layers</em> en cada superficie.</strong> Si no, no las mete.</li>
+<li><strong>La app de capas de Horacio</strong> muestra la progresión, las relaciones de aspecto, el empalme y el <em>overall</em>, y estima la primera celda a partir del y⁺ (como la calculadora de CFD Online). Usa la serie geométrica H = h₁(1 − rⁿ)/(1 − r).</li>
+</ul>
+<h3 id="47-criterios-de-tamano-de-celda" tabindex="-1">4.7 Criterios de tamaño de celda</h3>
+<ul>
+<li><strong>y⁺ con funciones de pared: 30–300</strong> (T §12.7). Se calcula después de correr.</li>
+<li><strong>Perfil alar:</strong> primera celda <strong>≈ cuerda/1000</strong> (1 mm para 1 m). Hay que refinar la <strong>nariz</strong>: ahí se concentra el drag, porque es la única zona con normales en x.
+<ul>
+<li>En clase, el y⁺ era de ~334 en la nariz.</li>
+<li>Si el salto de 0 a U∞ ocurre en 2–3 celdas, falta malla: <strong>hacen falta al menos ~5 celdas en la capa límite</strong>.</li>
+</ul>
+</li>
+<li><strong>Canal entre el piso y el suelo (&quot;radio hidráulico&quot;):</strong> cuántas celdas hay en la normal. Con el auto bajo (50 mm) había ~9, contra ~20 en 100 mm: más viscosidad numérica.
+<ul>
+<li>Como snappy malla con <strong>cubos</strong>, para recuperar resolución en altura hay que subir ~2 niveles, y eso refina también a lo largo y a lo ancho de todo el piso. <strong>Las simulaciones con el auto bajo son pesadas, no hay vuelta.</strong></li>
+<li><strong>Regla de Juan para flujo entre placas</strong> (piso–suelo, difusor): <strong>8–16 celdas</strong> en el huelgo (~10 % de error en la velocidad máxima; T §12.4).</li>
+</ul>
+</li>
+<li><strong>Perfil o elemento de alerón (con <code>snappyHexMesh</code>):</strong> <strong>~50 celdas en la cuerda</strong> y <strong>primera celda h_w ≈ 0,005·c</strong> (§9.3). En el TP 3D se piden ~30 celdas por cuerda.
+<ul>
+<li><strong>Fórmulas:</strong> c/(Δx/2^N) ≈ 50 y c/(Δx/2^N/r^N_layers) ≈ 200, con Δx la celda base, N los niveles y r el <em>expansion ratio</em>.</li>
+</ul>
+</li>
+<li><strong>Criterio visual:</strong> para que un color cambie, el valor tendría que repetirse en <strong>al menos dos celdas</strong>. Si salta de celda a celda (p. ej. de 50 a 48 m/s entre vecinas), falta malla.
+<ul>
+<li>Síntoma de malla gruesa: el salto entre dos celdas vecinas es del orden de todo el rango.</li>
+</ul>
+</li>
+<li><strong>Truco de presupuesto:</strong> refinar un nivel la zona más gruesa suma 7 × las celdas de ese nivel. Puede costar ~5 % de las celdas y refinar el 95 % del volumen. <strong>Las celdas de tamaño parecido convergen mejor.</strong></li>
+<li><strong>Celdas anisótropas</strong> (~10:1) en la pared: achicarlas en altura las estira más. Para predecir bien una separación hacen falta celdas casi cuadradas, y eso multiplica la malla.</li>
+<li><strong>Para comparar configuraciones</strong> (ala, rake, altura), <strong>mantener la misma malla</strong> (T §12.4).</li>
+<li><strong>Para quedar debajo de 200.000 celdas en SimFlow:</strong>
+<ul>
+<li>achicar el túnel;</li>
+<li>agrandar la celda base y subir un nivel en el auto (la superficie queda igual y se ahorran celdas del túnel);</li>
+<li>recordar que después se suman las cajas;</li>
+<li>apuntar a ~190.000.</li>
+</ul>
+</li>
+</ul>
+<h3 id="48-chequeos-de-malla" tabindex="-1">4.8 Chequeos de malla</h3>
+<ul>
+<li><strong><code>checkMesh</code>:</strong> número de celdas, no ortogonalidad máxima y media (51° de máximo fue OK) y si la malla está &quot;OK&quot;.</li>
+<li><strong><code>renumberMesh</code>:</strong> reordena las celdas para achicar el ancho de banda de la matriz. No cambia la solución, solo la velocidad. <strong>Hacerlo siempre.</strong></li>
+<li><strong>SimFlow, <em>Summary</em>:</strong> número de celdas. Al volver a <em>Geometry</em>, SimFlow a veces activa <em>box</em> y malla en 3D sin avisar.</li>
+<li><strong>Snappy nunca es perfecto:</strong> siempre quedan aristas mochadas y algún colapso de capas en cambios de curvatura.</li>
+</ul>
+<hr>
+<h2 id="5-setup-numerico" tabindex="-1">5. Setup numérico</h2>
+<h3 id="51-eleccion-del-solver-arbol-de-simflow" tabindex="-1">5.1 Elección del solver (árbol de SimFlow)</h3>
+<ol>
+<li><strong>Fase:</strong> <em>single phase</em>. Varios gases son especies, no fases.</li>
+<li><strong>Velocidad:</strong> <em><strong>low speed</strong></em> (Mach &lt; 0,3), que es el caso de la aerodinámica externa de un auto.</li>
+<li><strong>Tiempo:</strong> <strong>estacionario → <code>simpleFoam</code></strong>; <strong>transitorio → <code>pimpleFoam</code></strong>.</li>
+</ol>
+<ul>
+<li><strong>Malla:</strong> estática. La malla dinámica (un auto oscilando) es muy cara.</li>
+<li><strong>Turbulencia:</strong>
+<ul>
+<li><em>RAS → <strong>k-omega SST</strong></em> para autos y perfiles;</li>
+<li><em><strong>Laminar</strong></em> es el &quot;no-modelo&quot; (para el cilindro a Re 10–100).</li>
+</ul>
+</li>
+<li><strong>Fluido:</strong> newtoniano, ν ≈ 1,5×10⁻⁵ m²/s para el aire. Gravedad desactivada.</li>
+</ul>
+<h3 id="52-esquemas-fvschemes" tabindex="-1">5.2 Esquemas (<em>fvSchemes</em>)</h3>
+<table>
+<thead>
+<tr>
+<th>Término</th>
+<th>Recomendado</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gradientes</td>
+<td><strong><code>Gauss linear</code></strong></td>
+<td>El 95 % de las veces. En mallas industriales puede hacer falta un <strong>limitador</strong> (<em>cellLimited</em> / <em>faceLimited</em>)</td>
+</tr>
+<tr>
+<td>Convección de U</td>
+<td><strong><code>linearUpwind</code></strong></td>
+<td>&quot;El caballito de batalla industrial&quot;. <strong>Nunca <code>linear</code> puro.</strong> <code>upwind</code> solo para arrancar</td>
+</tr>
+<tr>
+<td>Convección de k, ω</td>
+<td><code>upwind</code> o <code>linearUpwind</code></td>
+<td><code>upwind</code> estabiliza, pero si al refinar el C_L sigue moviéndose, conviene pasarlos a 2.º orden</td>
+</tr>
+<tr>
+<td>Tiempo</td>
+<td><code>backward</code> (Horacio) o Euler implícito (Juan)</td>
+<td>Crank-Nicolson con <em>blending</em> 0,9 es otra opción</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-solvers-lineales-y-tolerancias-fvsolution" tabindex="-1">5.3 Solvers lineales y tolerancias (<em>fvSolution</em>)</h3>
+<ul>
+<li><strong>p:</strong> <strong>GAMG</strong>. <strong>U, k, ω:</strong> <em>smoothSolver</em> (o PBiCG). Lo predeterminado suele ser lo óptimo.</li>
+<li><strong>Regla de oro: tolerancia absoluta ~1×10⁻¹⁵ y relativa 0,01 (bajar 2 órdenes).</strong> En casos difíciles, relativa 1×10⁻³.
+<ul>
+<li><strong>Nunca pedir convergencia por debajo de la tolerancia absoluta de los solvers lineales: es un error categórico.</strong></li>
+<li>Si el residuo inicial ya cumple la absoluta, el solver no itera y la variable queda <strong>congelada</strong>. Pasó con ω, clavado en 1×10⁻⁶; además calmaba artificialmente ν_t y el resto de los residuos se desplomaba.</li>
+<li>OpenFOAM llama <code>tolerance</code> a secas a la absoluta.</li>
+<li>Si el residuo inicial ya está en ~1×10⁻¹⁴, poner 5×10⁻¹⁶ (suele pasar con k).</li>
+</ul>
+</li>
+<li><strong>No tiene sentido resolver cada sistema a precisión de máquina:</strong> SIMPLE resuelve U y p por separado, cada uno con una física &quot;incompleta&quot;. Conviene avanzar de a 2 órdenes por iteración exterior.</li>
+<li><strong>Correctores no ortogonales:</strong> resoluciones extra de p (1–2).</li>
+<li><strong>Precisión:</strong> la doble da ~16 dígitos. La simple (~8) puede andar en incompresible, pero no si se quieren ver décimas de Pa sobre 101.300.</li>
+</ul>
+<h3 id="54-bucles-de-pimplefoam-la-mamushka" tabindex="-1">5.4 Bucles de pimpleFoam (la &quot;mamushka&quot;)</h3>
+<ol>
+<li><strong>Paso de tiempo.</strong> Cada paso tiene que ser exacto, porque importa la película entera.</li>
+<li><strong>Outer correctors (PIMPLE):</strong> rehacen el acople no lineal dentro del paso.
+<ul>
+<li><strong>2–3 es poco, 5 es lo normal, 10 es mucho.</strong> Si hacen falta 20, mejor achicar Δt.</li>
+<li>Co admisible ≈ 5 × el número de outer correctors.</li>
+<li><strong>Usar un número fijo, sin criterio de residuos para cortarlos:</strong> OpenFOAM compara mal el residuo inicial con el de la última corrección no ortogonal.</li>
+</ul>
+</li>
+<li><strong>Correctors (PISO):</strong> bloques de presión.</li>
+<li><strong>Correcciones no ortogonales.</strong></li>
+<li><strong>Iteraciones del solver lineal.</strong></li>
+</ol>
+<ul>
+<li><strong>En clase se usó:</strong> 3 outer, 2 correctors y 1 non-orthogonal.</li>
+<li><strong>Relajación en transitorio: 1 y 1, con <em>consistent</em> (SIMPLEC).</strong> Relajar falsea la película; solo se relaja (~0,7) si explota.</li>
+<li><strong>Otras opciones:</strong>
+<ul>
+<li><em>velocity damping</em> (limita velocidades no físicas en arranques);</li>
+<li><em>passive scalar</em> (trazador);</li>
+<li><em>cell zones</em> (porosos, fuentes).</li>
+</ul>
+</li>
+</ul>
+<h3 id="55-arranque-suave-soft-start-las-simulaciones-explotan-siempre" tabindex="-1">5.5 Arranque suave (<em>soft start</em>): las simulaciones explotan siempre</h3>
+<p><strong>Causas típicas:</strong> condiciones de borde mal puestas, celdas defectuosas, refinamiento inadecuado o una relajación sin ajustar. &quot;Más del 80 % de los que abandonan el CFD es por esto.&quot;</p>
+<p><strong>Receta de Horacio para simpleFoam</strong> (viene incorporada en Mustang Studio):</p>
+<table>
+<thead>
+<tr>
+<th>Etapa</th>
+<th>Relajación p</th>
+<th>Relajación U (y k, ω)</th>
+<th>Esquemas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arranque (~primeras 50 iteraciones)</td>
+<td>0,99</td>
+<td>0,01</td>
+<td><code>upwind</code> en todo + gradiente <em>face limited</em></td>
+</tr>
+<tr>
+<td>Intermedia</td>
+<td>0,9</td>
+<td>0,1</td>
+<td></td>
+</tr>
+<tr>
+<td>Intermedia</td>
+<td>0,7</td>
+<td>0,3</td>
+<td></td>
+</tr>
+<tr>
+<td>Final</td>
+<td><strong>0,3</strong></td>
+<td><strong>0,7</strong> (la relajación clásica)</td>
+<td><code>linearUpwind</code>, 2.º orden</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>El cambio se hace en ~6 escalones a lo largo de las primeras ~150 iteraciones.</li>
+<li><strong>Cuesta casi nada:</strong> si no hacía falta, son ~200 iteraciones que avanzan poco.</li>
+<li><strong>Estrategia general, si algo explota:</strong>
+<ol>
+<li>arrancar en <a href="http://1.er">1.er</a> orden;</li>
+<li>pasar a 2.º orden <strong>una ecuación por vez</strong> (turbulencia, gradientes, velocidad);</li>
+<li>si explota, mirar <strong>dónde</strong>: suele ser una celda mala, y se arregla la malla;</li>
+<li>recién después, bajar la relajación.</li>
+</ol>
+</li>
+<li><strong>Variantes:</strong>
+<ul>
+<li>terminar en <a href="http://1.er">1.er</a> orden y usar ese resultado como inicio del 2.º orden (como el arranque estrella-triángulo de un motor);</li>
+<li>arrancar con una viscosidad más alta y bajarla de a poco.</li>
+</ul>
+</li>
+</ul>
+<h3 id="56-paso-de-tiempo-y-tiempo-simulado-transitorios" tabindex="-1">5.6 Paso de tiempo y tiempo simulado (transitorios)</h3>
+<ul>
+<li><strong>Δt ≈ h_mín·Co/U.</strong> Con Co ≈ 1 en la celda más chica es seguro. Con PIMPLE se puede subir: Co máximo de 50–100 localizado, con Co <strong>medio &lt; 1</strong>.
+<ul>
+<li>Paso automático: se define el Co máximo y el algoritmo ajusta Δt. Con Co máx = 1 es conservador (lento si la malla varía mucho de tamaño).</li>
+</ul>
+</li>
+<li><strong>En el log, mirar el Courant máximo:</strong> pasar de 1 es tolerable si no es descabellado y los residuos se portan bien.</li>
+<li><strong>Tiempo simulado:</strong> que una partícula recorra <strong>~20–40 longitudes</strong> del cuerpo. En el JN153 hicieron falta ~45 cuerdas.
+<ul>
+<li><strong>Si los vórtices &quot;no aparecen&quot;, puede faltar tiempo, no malla</strong> (§6.4).</li>
+</ul>
+</li>
+<li><strong>Al cambiar Re por la velocidad, recalcular el Δt.</strong> Para el cilindro, ×10 la velocidad exige ÷10 el Δt, pero el flujo barre 10 veces más rápido, así que el costo no crece tanto.
+<ul>
+<li>Elegir la velocidad o la viscosidad de modo que <strong>el Courant y el Fourier</strong> queden razonables: la física es la misma, pero la numérica no.</li>
+</ul>
+</li>
+</ul>
+<h3 id="57-monitores-de-fuerzas" tabindex="-1">5.7 Monitores de fuerzas</h3>
+<ul>
+<li><strong>Bordes integrados:</strong> las superficies del cuerpo (en el perfil, <em>lower</em>, <em>upper</em> y <em>tip</em>).</li>
+<li><strong>Direcciones:</strong> <strong>drag en +x</strong> y <strong>lift en +z</strong> (en 3D; en 2D con el plato en xy, el lift va en y). <strong>Eje de pitch en y</strong>, para repartir entre ejes.</li>
+<li><strong>Referencias:</strong> L_ref (cuerda, diámetro o distancia entre ejes), A_ref y U∞ = la U de la entrada.
+<ul>
+<li><strong>En 2D, OpenFOAM integra con el ancho real de la malla:</strong> verificar el espesor del plato en ParaView, porque las fuerzas son proporcionales a él. Con 1 m de espesor, A_ref = cuerda × 1.</li>
+</ul>
+</li>
+<li><strong>El drag es la proyección del vector de fuerza total</strong> (presión + corte) sobre la dirección de drag. Lo mismo para el lift.</li>
+<li><strong>Cortes (<em>slices</em>) en vivo:</strong> un plano dado por un punto y una normal, para ver p, U y k mientras corre.</li>
+<li><strong>Reparto entre ejes y balance:</strong> con el momento en el eje delantero, F_rear = M_y/L y Balance = (Fz − F_rear)/Fz (T §7.2). Se hace en una planilla.</li>
+</ul>
+<hr>
+<h2 id="6-convergencia-en-la-practica" tabindex="-1">6. Convergencia en la práctica</h2>
+<h3 id="61-checklist-estacionario" tabindex="-1">6.1 Checklist (estacionario)</h3>
+<ol>
+<li><strong>Los monitores (QOI) quietos:</strong> en las últimas ~200 iteraciones, la variación sobre el promedio es &lt; <strong>0,5–1 %</strong>.
+<ul>
+<li>Cuantos más monitores, mejor: C_L suele tardar más que C_D.</li>
+<li>En flujo interno, si se impone el caudal, se monitorea Δp.</li>
+</ul>
+</li>
+<li><strong>Los residuos iniciales caen 2–3 órdenes</strong> desde el transitorio inicial, <strong>todos en paralelo</strong>.</li>
+<li><strong>Valor final aceptable:</strong> ~1×10⁻⁴–1×10⁻⁶. La velocidad, al menos 1×10⁻⁴; la presión puede quedar en ~1×10⁻².
+<ul>
+<li>En flujo externo turbulento real <strong>nunca se llega a cero de máquina</strong>. Si alguien lo muestra, la malla era gruesísima.</li>
+</ul>
+</li>
+<li><strong>Si oscila:</strong> convergencia periódica con <strong>~5 ciclos repetidos</strong>, y se usa el promedio. Si los residuos no bajaron ni un orden (NACA a 25°), <strong>no es aceptable</strong>.</li>
+<li><strong>Tolerancias absolutas</strong> de los solvers lineales muy por debajo del criterio (~1×10⁻¹⁵).</li>
+</ol>
+<ul>
+<li><strong>Monitores quietos con residuos altos y planos:</strong> el flujo es estable pero no confiable. Solo sirve para comparar casos con el mismo nivel de residuo.</li>
+<li><strong>Mostrar los residuos es más &quot;elegante&quot; que mostrar monitores:</strong> es la medida más realista.</li>
+</ul>
+<h3 id="62-lectura-del-log" tabindex="-1">6.2 Lectura del log</h3>
+<ul>
+<li><strong>Por cada iteración y cada variable</strong> se informan el residuo <strong>inicial</strong>, el <strong>final</strong> y el número de iteraciones.
+<ul>
+<li>U suele cumplir en 1 iteración; <strong>p tarda más</strong> (~16–23).</li>
+<li>Las correcciones no ortogonales se ven como resoluciones extra de p.</li>
+</ul>
+</li>
+<li><strong>Lo que hay que mirar es el residuo inicial.</strong> No es el final de la anterior: al resolver las otras variables acopladas, la precisión se pierde.</li>
+</ul>
+<h3 id="63-transitorios" tabindex="-1">6.3 Transitorios</h3>
+<ul>
+<li><strong>Convergencia dentro de cada paso:</strong> comparar el residuo inicial de la <strong>primera</strong> iteración PIMPLE con el de la <strong>última</strong>, en el mismo paso.
+<ul>
+<li>Ejemplo: Ux de 4×10⁻⁵ a 1×10⁻⁸ (excelente) y p de 1×10⁻³ a 1×10⁻⁴ (aceptable; la presión siempre es la más difícil).</li>
+</ul>
+</li>
+<li><strong>El gráfico de SimFlow solo muestra el inicial de la primera PIMPLE.</strong> El resto hay que verlo en el log. El residuo final no sirve para esto.</li>
+<li><strong>En casos periódicos los residuos nunca llegan a cero, y está bien.</strong></li>
+<li><strong>El software no detecta solo la convergencia periódica:</strong> se miran los monitores y se corta a mano. La primera vez, correr de más.</li>
+</ul>
+<h3 id="64-falta-tiempo-o-falta-malla" tabindex="-1">6.4 ¿Falta tiempo o falta malla?</h3>
+<ul>
+<li>Si al darle <em>play</em> en ParaView el resultado <strong>ya no cambia</strong> entre pasos y el fenómeno no aparece, <strong>falta malla</strong>.</li>
+<li>Si <strong>sigue cambiando</strong>, falta simular más tiempo.</li>
+<li>Ejemplo del cilindro a Re 100: con la malla gruesa el C_L no oscilaba (faltaba malla). A Re 10, los vórtices fijos tardaban en aparecer (faltaba tiempo).</li>
+</ul>
+<h3 id="65-metodo-de-trabajo" tabindex="-1">6.5 Método de trabajo</h3>
+<ul>
+<li><strong>Estudio de malla siempre</strong> (T §12.9), con al menos 3 niveles de refinamiento.</li>
+<li><strong>Cambiar de a una cosa por vez:</strong> primero la malla, después los esquemas. &quot;Un proceso de hormiga.&quot;</li>
+<li><strong>Planilla de registro de cada corrida:</strong>
+<ul>
+<li>nombre (p. ej. <code>S18</code>, <code>07-09-2026 S1 …</code>), con la letra S de simulación y un número;</li>
+<li>geometría y parámetros;</li>
+<li>niveles, capas y número de celdas;</li>
+<li>solver y esquemas;</li>
+<li>Courant y Fourier;</li>
+<li>tiempo de cómputo;</li>
+<li>C_D, C_L, balance, referencia y error.</li>
+<li>&quot;Todo proyecto CFD tiene que tener <em>input</em> y <em>output</em>.&quot;</li>
+</ul>
+</li>
+<li><strong>Error aceptable: 5–10 %.</strong></li>
+<li><strong>Guardar los resultados antes de cambiar la malla:</strong> SimFlow obliga a resetear la corrida y se pierde lo anterior.</li>
+</ul>
+<hr>
+<h2 id="7-postproceso-en-paraview" tabindex="-1">7. Postproceso en ParaView</h2>
+<h3 id="71-basico" tabindex="-1">7.1 Básico</h3>
+<ul>
+<li><strong>Abrir:</strong> desde SimFlow (<em>Post-processing → ParaView</em>) o el archivo <code>.foam</code>. Siempre <strong>Apply</strong>.
+<ul>
+<li>Para casos en paralelo, <em><strong>Decomposed case</strong></em> (más rápido).</li>
+<li><strong>Cada bloque abierto consume ~3–4 GB de RAM.</strong></li>
+</ul>
+</li>
+<li><strong>Navegación:</strong> quedarse en modo <strong>3D</strong>.
+<ul>
+<li>Clic izquierdo rota, <strong>clic del medio desplaza</strong> y la rueda hace zoom.</li>
+<li>El centro de rotación se fija con doble clic (<em>Pick Center</em>).</li>
+<li><em><strong>Parallel projection</strong></em> evita el punto de fuga; se puede guardar como predeterminada.</li>
+</ul>
+</li>
+<li><strong>Celdas o puntos:</strong>
+<ul>
+<li><strong>para pensar la numérica, ver en celdas</strong> (los valores reales de la solución, con su ruido y la primera celda que no está en 0);</li>
+<li><strong>para pensar la física o mostrar al cliente, ver en puntos</strong> (interpolado, más &quot;físico&quot;, pero esconde el ruido).</li>
+<li><em><strong>Surface With Edges</strong></em> muestra la malla.</li>
+</ul>
+</li>
+<li><strong>Escalas de colores:</strong>
+<ul>
+<li>azul a rojo para la presión, arcoíris o <em>turbo</em> para la velocidad;</li>
+<li><strong>Rainbow Blended White</strong> (la favorita de Horacio) deja en blanco la velocidad nula y da mucho contraste en la separación;</li>
+<li><em>Cool to Warm</em>, la predeterminada, &quot;la más fea&quot;.</li>
+<li>Reescalar al rango visible o saturar a mano.</li>
+</ul>
+</li>
+<li><strong>Basura numérica:</strong> valores de ~1×10⁻¹⁸ (como U_z en 2D) son cero.</li>
+</ul>
+<h3 id="72-herramientas" tabindex="-1">7.2 Herramientas</h3>
+<table>
+<thead>
+<tr>
+<th>Herramienta</th>
+<th>Uso y trucos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slice / Crinkle slice</strong></td>
+<td>El crinkle muestra las celdas enteras. Si el corte coincide justo con caras (plano de simetría), aparecen &quot;agujeros&quot;: desplazarlo −0,0005 m</td>
+</tr>
+<tr>
+<td><strong>Corte en un elemento</strong></td>
+<td>Hacer el <em>Slice</em> sobre la STL del ala sola (toma su centro) y después <em>Change Input</em> al dominio completo</td>
+</tr>
+<tr>
+<td><strong>Calculator</strong></td>
+<td><strong>Presión total:</strong> <code>p + 0.5*mag(U)^2</code> (en <em>Cell Data</em>). <strong>Ángulo del flujo:</strong> <code>atan(U_Z/U_X)*180/3.1416</code>. <strong>Velocidad relativa:</strong> <code>U - 0.1*iHat</code> (para ver los vórtices &quot;montados&quot; sobre el flujo). Las coordenadas se ven con <code>coordsY</code></td>
+</tr>
+<tr>
+<td><strong>Glyph (vectores)</strong></td>
+<td>Arrancar con escala chica (1×10⁻³–1×10⁻⁴) y graficar cada 5–10 puntos para no agotar la memoria. Se pueden pintar con otra variable</td>
+</tr>
+<tr>
+<td><strong>Surface LIC</strong></td>
+<td>Imita la <strong>pintura de aceite</strong> (intensidad ~0,3–0,4). Es pesado y necesita una placa de video</td>
+</tr>
+<tr>
+<td><strong>Stream Tracer</strong></td>
+<td>Ver §7.3</td>
+</tr>
+<tr>
+<td><strong>Tube</strong></td>
+<td>Convierte las streamlines en tubos (radio ~1–10 mm, ajustado a ojo)</td>
+</tr>
+<tr>
+<td><strong>Presión en superficie</strong></td>
+<td>Un segundo bloque del caso con <em>internalMesh</em> apagado y el auto y el ala prendidos</td>
+</tr>
+<tr>
+<td><strong>Plot over line</strong></td>
+<td>Por ejemplo, la presión total en el eje del Venturi</td>
+</tr>
+<tr>
+<td><strong>Wall → y⁺</strong> (SimFlow, <em>Calculate</em>)</td>
+<td>Mínimo, máximo y promedio por superficie</td>
+</tr>
+</tbody>
+</table>
+<h3 id="73-streamlines" tabindex="-1">7.3 Streamlines</h3>
+<ul>
+<li><strong>Aplicarlas sobre un bloque volumétrico</strong> (<em>internalMesh</em>), no sobre los bordes.</li>
+<li><strong>Qué calculan:</strong> siembran partículas sin masa que siguen la velocidad (trackeo cinemático), integradas con Runge-Kutta 4-5.</li>
+<li><strong>Semilla de línea:</strong> que <strong>barra un solo eje</strong> (p. ej. el ancho, con los dos puntos a la misma altura). Por ejemplo: x ≈ −10 m, y de −1 a 1 m, z = 0,3 m y 100–300 puntos.</li>
+<li><strong>Semilla de esfera (<em>Point Source</em>):</strong> centro y radio, para estudiar una toma de aire.</li>
+<li><strong><em>Backward</em>:</strong> integra con −U. <strong>Sembrando bajo el ala se ve de dónde vino ese aire.</strong> <em>Both</em> traza para los dos lados.</li>
+<li><strong>Líneas que se cortan:</strong> partículas que bajan de la velocidad terminal. Se mejora con <em>Maximum Streamline Length</em>, <em>Maximum Steps</em> y la tolerancia, y sobre todo <strong>sembrando más puntos</strong>.</li>
+<li><strong>Técnica de &quot;tomografía&quot;:</strong> barrer muchas alturas con líneas transversales y muchos anchos con líneas verticales.</li>
+<li><strong>Estética:</strong> auto en <em>wireframe</em> con opacidad (~2–5 %), fondo negro y familias de líneas en colores sólidos.</li>
+</ul>
+<h3 id="74-organizacion" tabindex="-1">7.4 Organización</h3>
+<ul>
+<li><strong><em>File → Save State</em>:</strong> guarda todo el pipeline (cortes, vista, colores).
+<ul>
+<li>Para aplicarlo a otra corrida: <em>Load State → Choose File Names</em> y elegir el <code>.foam</code> nuevo (una vez por bloque).</li>
+<li><strong>El estado guarda también la disposición de vistas</strong> y puede pisar una vista doble.</li>
+</ul>
+</li>
+<li><strong>Comparar casos:</strong> dos vistas con <em><strong>Link Camera</strong></em> (clic derecho y doble clic en la otra vista).</li>
+<li><strong>Animaciones:</strong>
+<ul>
+<li>grabar los resultados <strong>cada ~10 pasos</strong>, porque lo que no se graba se pierde;</li>
+<li>si se muestrea poco aparece un efecto estroboscópico (los vórtices parecen ir hacia atrás);</li>
+<li><em><strong>File → Save Animation</strong></em> exporta un mp4.</li>
+</ul>
+</li>
+<li><strong>En paralelo</strong>, <code>processor0.foam</code>, <code>processor1.foam</code>… permiten ver cada subdominio.</li>
+</ul>
+<hr>
+<h2 id="8-paralelismo" tabindex="-1">8. Paralelismo</h2>
+<ul>
+<li><strong>CFD = memoria distribuida:</strong> se <strong>particiona el dominio</strong> y cada núcleo resuelve su subdominio, que se comunica con los demás por los bordes <code>processor</code> vía <strong>MPI</strong>.
+<ul>
+<li>El resultado es <strong>idéntico</strong> al de la corrida en serie.</li>
+<li><strong>Se reparten celdas, no volumen:</strong> un subdominio chico debajo del auto &quot;vale&quot; lo mismo que uno grande en el túnel.</li>
+</ul>
+</li>
+<li><strong><code>decomposePar</code>:</strong>
+<ul>
+<li><strong>primer objetivo:</strong> la misma cantidad de celdas por procesador (la corrida va al ritmo del más cargado);</li>
+<li><strong>segundo objetivo:</strong> <strong>minimizar la frontera</strong>, es decir, la comunicación.</li>
+<li><strong><code>scotch</code></strong> (por grafos, el predeterminado) hace las dos cosas. &quot;Hoy se descompone con scotch.&quot;</li>
+<li><strong><code>simple</code>:</strong> cortes por eje (p. ej. 4 × 4 × 1); conviene cortar por el lado corto.</li>
+</ul>
+</li>
+<li><strong>Ejecutar:</strong> <code>mpiexec -np N simpleFoam -parallel</code> (en Linux, <code>mpirun</code>). <code>-parallel</code> activa el modo paralelo del mismo binario.</li>
+<li><strong>SimFlow gratuito &quot;solo no agrega <code>mpiexec -np N … -parallel</code>&quot;.</strong> Mustang Studio sí, sin límite de procesadores.</li>
+<li><strong>Analogía del pit stop:</strong> 20 mecánicos tardan ~3 s en lo que uno solo tardaría 60, pero con una sola rueda se estorbarían. <strong>El problema se satura.</strong></li>
+<li><strong>Problema visto en clase:</strong> la app pedía Microsoft MPI aunque estaba instalado (probablemente en otra ruta). Horacio iba a publicar la solución en el grupo.</li>
+</ul>
+<hr>
+<h2 id="9-xfoil-y-airfoil-tools" tabindex="-1">9. XFOIL y Airfoil Tools</h2>
+<h3 id="91-airfoil-tools-airfoiltoolscom" tabindex="-1">9.1 Airfoil Tools (<a href="http://airfoiltools.com">airfoiltools.com</a>)</h3>
+<ul>
+<li>Buscador de perfiles con <strong>coordenadas en formato Selig</strong> (columnas x, y; primero el extradós y después el intradós, con la cuerda normalizada de 0 a 1). <strong>Es el formato que sirven XFOIL y SimFlow.</strong></li>
+<li><strong>Polares ya calculadas para varios Re.</strong> Las útiles son las de 100.000–1.000.000; a Re bajo son erráticas.</li>
+<li>Para un Re intermedio, interpolar o calcular con XFOIL.</li>
+</ul>
+<h3 id="92-xfoil-linea-de-comandos" tabindex="-1">9.2 XFOIL (línea de comandos)</h3>
+<pre><code>NACA 0012              (o: LOAD E420.dat  → nombre;  PANE para repanelizar)
+OPER
+VISC 1e6               (capa límite viscosa, Re = 10⁶)
+PACC                   (nombre del archivo de salida; Enter para no guardar el auxiliar)
+ASEQ -5 20 0.25        (de −5° a 20° con paso 0,25°)
+</code></pre>
+<ul>
+<li><strong>Lo útil es el archivo de salida</strong> (α, C_L, C_D, C_Dp, C_M), no el gráfico. Se abre en Excel o Python para graficar <strong>C_L–α</strong> y la <strong>polar</strong>, y para calcular C_L/C_D.</li>
+<li><strong>Si faltan ángulos cerca del máximo:</strong> achicar el paso y subir <code>ITER</code> (p. ej. 200). Si no converge pasada la pérdida, no hace falta seguir: el máximo y la máxima eficiencia ya quedaron.</li>
+<li><strong>Mayúsculas y minúsculas</strong> importan en el nombre del archivo.</li>
+<li><strong>Para carga, invertir el perfil</strong> o trabajar con ángulos negativos.</li>
+<li><strong>Material del curso:</strong> carpeta XFOIL del Moodle (Unidad 5) y <span class="nolink">Software/XFOIL (Clase 10)</span>.</li>
+</ul>
+<h3 id="93-alerones-de-varios-elementos-makewing-simflow" tabindex="-1">9.3 Alerones de varios elementos: <code>makeWing</code> + SimFlow</h3>
+<ul>
+<li><strong>XFOIL no admite multielemento</strong> (MSES sí, pero no es libre), y el módulo <em>Airfoil</em> de SimFlow solo acepta un cuerpo: hay que hacer CFD con <em>Hex Meshing</em> (T §9.7).</li>
+<li><strong><code>makeWing</code></strong> (aula virtual, Unidad V; copia en <span class="nolink">Software/makeWing2026</span>): genera <strong>una STL por elemento</strong>, ya ubicadas, con el borde de ataque del main en (0, 0) y el alerón <strong>centrado en z = 0</strong>.
+<ul>
+<li><strong>Python:</strong> <code>python makeWing.py params_bicuerpo.json</code> (puede hacer falta <code>pip install numpy-stl</code>).</li>
+<li><strong>MATLAB:</strong> <code>makeWing('params_bicuerpo.json')</code> desde la <em>Command Window</em> (con <em>Run</em> falta el argumento).</li>
+<li>Siempre parado en la carpeta del script.</li>
+</ul>
+</li>
+<li><strong>Parámetros del JSON:</strong>
+<ul>
+<li><code>folder</code>, <code>envergadura</code> (m), <code>npoints</code> (100–150 por perfil), <code>gurney</code> (altura en <strong>m</strong>; 0 = sin Gurney), <code>endplate</code>;</li>
+<li>por elemento: <code>label</code>, <code>profile</code> (NACA de 4 dígitos), <code>c</code>, <code>alpha</code> (respecto del anterior), <code>h</code> (distancia vertical) y <code>solape</code> (respecto del anterior);</li>
+<li><strong>el Gurney va siempre en el último flap</strong>; para agregar flaps se copia el bloque;</li>
+<li>el ejemplo <code>params_tricuerpo.json</code> en realidad tiene <strong>cuatro</strong> cuerpos.</li>
+</ul>
+</li>
+<li><strong>Ejemplo bicuerpo de clase:</strong> NACA 8416 (18 cm, 0°) + NACA 4418 (8 cm, 30°, h y solape de 15 mm). Cuerda total ≈ 24 cm, ángulo total ≈ 13°.</li>
+<li><strong>Malla 2D en SimFlow:</strong>
+<ol>
+<li>Importar <strong>cada STL por separado</strong>, en <strong>metros</strong>.</li>
+<li>Malla base <em><strong>Plate</strong></em> de 3 × 2 m (1 m adelante, 2 m detrás, ±1 m en vertical), 60 × 40 divisiones (Δx = 5 cm). <strong>Nombrar <em>inlet</em>, <em>outlet</em>, <em>top</em> y <em>bottom</em> antes de mallar.</strong></li>
+<li><strong>Niveles:</strong> main (c = 0,18 m) nivel 4 (≈ 3,1 mm); flap (c = 0,08 m) nivel 5.</li>
+<li><strong>Capas:</strong> 5, <em>expansion ratio</em> 1,25, <em>first layer thickness</em> relativo 0,25.</li>
+<li><strong>Caja de la estela:</strong> <em>Create Box</em> que contenga z = 0, como zona de <strong>refinamiento</strong> nivel 2 <em>inside</em>. Queda en ~6200 celdas.</li>
+<li>Si sale &quot;cannot find surface…&quot; al remallar: borrar la malla, cerrar y reabrir SimFlow.</li>
+</ol>
+</li>
+<li><strong>Simulación:</strong>
+<ul>
+<li><code>pimpleFoam</code>, k–ω SST, aire, 85 m/s, U en 2.º orden;</li>
+<li><em>inlet</em> con <em>Surface Normal Fixed Value</em>, <em>outlet</em> con p = 0, <em>top</em>/<em>bottom</em> como <em>wall</em> con <em><strong>slip</strong></em>, elementos con funciones de pared, frente y fondo <em>empty</em>;</li>
+<li>0,5 s simulados. Con Δt = 10⁻³ s el Courant máximo daba ~130 y no convergía; con Δt 5 veces menor quedó en ~6;</li>
+<li>poner un criterio de corte por residuos.</li>
+</ul>
+</li>
+<li><strong>El estacionario también vale</strong> (es el que pide el TP): converge antes y no hay que elegir Δt.</li>
+</ul>
+<hr>
+<h2 id="10-carwingpositioner-mustang-studio" tabindex="-1">10. CarWingPositioner / Mustang Studio</h2>
+<p>App de Horacio, hecha con IA, para el caso del <strong>Mustang de TC (silueta extruida) con el ala del TC</strong>. Necesita .NET y Windows 10 u 11. Va cambiando de versión (2.09, 2.20…): reportar los errores en el grupo.</p>
+<h3 id="101-geometria" tabindex="-1">10.1 Geometría</h3>
+<ul>
+<li><em><strong>Load default STLs</strong></em> carga el Mustang y el ala posicionados (x = 0 en el eje delantero; la punta del splitter en ~−1 m). También acepta cualquier auto y ala.
+<ul>
+<li>Desde la clase 10 acepta STL 3D (no solo siluetas), por ahora como dos cuerpos cerrados.</li>
+</ul>
+</li>
+<li><strong>STL en milímetros</strong>, tanto al cargar como al exportar. Si se exporta en metros y se importa en milímetros, sale un auto de 5 mm.</li>
+<li><strong>Parámetros:</strong> despeje (<em>ground clearance</em>), <strong>rake</strong>, Δx y Δz del borde de ataque del ala y <strong>ángulo de ataque</strong> (entre la recta LE-TE y el piso).
+<ul>
+<li><strong>Activar la opción de mover el ala rígidamente con el auto</strong> al cambiar rake o altura (viene desactivada).</li>
+<li><strong>Poner primero el ángulo y después la posición.</strong> En la práctica el rake es de décimas de grado.</li>
+<li><strong>La definición del LE es subjetiva</strong> (punto de estancamiento o el más adelantado): se elige con un clic y se vuelve con <em>Reset</em>.</li>
+<li><strong>El rake se aplica pivotando sobre el punto de altura mínima</strong> (en el modelo, el splitter a 100 mm). En el auto real hay que calcular cuánto subir cada eje para rotar sobre el punto reglamentario.</li>
+<li>Algunos reglamentos limitan la posición del ala; por ejemplo, en el WRC 2027 el borde de fuga no puede quedar detrás del punto más trasero del auto.</li>
+<li>Con despejes de 0–10 mm la malla se complica; con 100 mm es razonable.</li>
+</ul>
+</li>
+</ul>
+<h3 id="102-tunel-y-malla" tabindex="-1">10.2 Túnel y malla</h3>
+<ul>
+<li><strong><em>Cell size</em> en metros:</strong> la app calcula las divisiones y estira levemente el túnel para que las celdas sean cúbicas. Sirve para saber qué poner en SimFlow.</li>
+<li><strong>Simetría:</strong> una casilla en el túnel; se simula el semiespacio y negativo.</li>
+<li><strong>Cajas de refinamiento editables</strong> (vehículo, <em>underfloor</em>, estela y, desde la clase 10, una <em>full tunnel</em>).
+<ul>
+<li><strong>La caja <em>full tunnel</em> tiene que tener las mismas dimensiones que el túnel</strong>; si es más grande, da &quot;inválido&quot; (<em>bug</em>).</li>
+<li>Hay un <em>maximum cells</em> que solo bloquea el botón: subirlo.</li>
+</ul>
+</li>
+<li><strong>Capas:</strong> <em>layer designer</em> integrado (§4.6). Tildar <em>Add prism layers</em> en cada superficie.</li>
+</ul>
+<h3 id="103-setup-s18-el-de-referencia-para-los-trabajos" tabindex="-1">10.3 Setup S18 (el de referencia para los trabajos)</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Túnel</td>
+<td>x de −20 a 80 m, 40 m de ancho, 20 m de alto, <strong>con simetría</strong></td>
+</tr>
+<tr>
+<td>Celda base</td>
+<td>1 m</td>
+</tr>
+<tr>
+<td>Caja <em>full tunnel</em></td>
+<td>Nivel 1 (ninguna celda de más de 500 mm)</td>
+</tr>
+<tr>
+<td>Caja del vehículo</td>
+<td>Nivel 4</td>
+</tr>
+<tr>
+<td>Caja <em>underfloor</em></td>
+<td>Nivel 6</td>
+</tr>
+<tr>
+<td>Caja de la estela</td>
+<td>Nivel 3</td>
+</tr>
+<tr>
+<td>Auto</td>
+<td>6 / 6 / 6 (mínimo, máximo, <em>feature</em>)</td>
+</tr>
+<tr>
+<td>Ala</td>
+<td>9 / 9 / 9 (~2 mm)</td>
+</tr>
+<tr>
+<td>Capas</td>
+<td>Relativo 0,1 + <em>smooth transition to bulk</em> + 3 capas, en auto, ala y piso</td>
+</tr>
+<tr>
+<td>Iteraciones</td>
+<td>2000</td>
+</tr>
+<tr>
+<td>Velocidad</td>
+<td>55 m/s (~200 km/h)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Resultado:</strong> ~1,45 millones de celdas con simetría (~2,9 millones con el auto entero), malladas en ~9 min.
+<ul>
+<li>La corrida tardó ~2,5 h con 2 procesadores; se estima ~40 min a 3 h con un i7.</li>
+</ul>
+</li>
+<li><strong>¿Por qué base de 1 m con nivel 1 y no 0,5 m con nivel 0?</strong> Da lo mismo, pero así <strong>para refinar todo el túnel alcanza con subir la caja <em>full</em></strong> (nivel 2 = 250 mm) sin tocar el resto.</li>
+<li><strong>Mejoras posibles:</strong>
+<ul>
+<li>más refinamiento en el frente y en la estela (al menos un nivel);</li>
+<li>adelantar la caja del piso o agregar otra más alta;</li>
+<li>para el rake de 2° (que desprende) o el auto bajo, mallas más finas puntuales.</li>
+</ul>
+</li>
+<li><strong>Velocidad fija, setup numérico fijo</strong> (<code>linearUpwind</code>, tolerancia relativa 0,01) y <em>soft start</em> incorporado (§5.5).</li>
+<li><strong>Turbulencia de entrada del S18:</strong> I = 10 %, VR = 500 (k = 45,375 m²/s², ω = 6050 s⁻¹).</li>
+<li><strong>Malla S40</strong> (la que pide el ejercicio 2 del TP): igual que S18, pero con <em>VehicleRegion</em> extendida 1 m aguas arriba y 2 m aguas abajo.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Caja</th>
+<th>Mínimo (x, y, z) [m]</th>
+<th>Máximo (x, y, z) [m]</th>
+<th>Nivel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>VehicleRegion</code></td>
+<td>(−2,5; −0,75; 0)</td>
+<td>(6,5; 0,75; 1,5)</td>
+<td>4</td>
+</tr>
+<tr>
+<td><code>Underfloor</code></td>
+<td>(−1,25; −0,6; 0)</td>
+<td>(4,25; 0,6; 0,2)</td>
+<td>6</td>
+</tr>
+<tr>
+<td><code>Wake</code></td>
+<td>(3; −0,75; 0)</td>
+<td>(10; 0,75; 1,75)</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>FullTunnelLevel1</code></td>
+<td>(−20; −20; 0)</td>
+<td>(80; 20; 20)</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><em>Half-car symmetry – retain −Y</em>. Tope de 5 millones de celdas.</li>
+<li>En los solapamientos manda el nivel mayor. Reportar las capas <strong>realmente obtenidas</strong>, no las pedidas.</li>
+<li><strong>Balance con los datos del Studio:</strong> Fzr = −My/2,60; Fzf = Fz − Fzr; B_f = 100·Fzf/Fz (My respecto de (0,0,0), batalla 2,60 m). Con <em>Full-car equivalent</em> las fuerzas ya están duplicadas: <strong>no volver a duplicar</strong>.</li>
+<li><strong>Promediar 100 iteraciones estables</strong> e informar ventana y dispersión. &quot;2000 iteraciones no certifican convergencia ni independencia de malla.&quot;</li>
+</ul>
+<h3 id="104-ejecucion-y-exportacion" tabindex="-1">10.4 Ejecución y exportación</h3>
+<ul>
+<li><strong>Correr desde la app:</strong> elegir la carpeta de OpenFOAM (se detecta sola), la de destino, las iteraciones y el <strong>número de procesadores</strong>.
+<ul>
+<li>Genera <code>run-AAAAMMDD-HHMMSS-…</code> con el <strong>caso completo de OpenFOAM</strong>, incluido un <code>snappyHexMeshDict</code> con &quot;todos los trucos&quot; de Horacio.</li>
+</ul>
+</li>
+<li><strong><em>Export runnable case</em>:</strong> el caso &quot;virgen&quot; con <code>Allrun.bat</code> y una guía HTML para correrlo por terminal (§3.2).
+<ul>
+<li>Para agregar otra STL, hacerlo por analogía en todos los diccionarios.</li>
+</ul>
+</li>
+<li><strong>Monitores:</strong> Fx, Fy, Fz y momentos por parte (auto, ala) y total. El proyecto se puede guardar.</li>
+</ul>
+<hr>
+<h2 id="11-casos-del-curso-y-resultados-de-referencia" tabindex="-1">11. Casos del curso y resultados de referencia</h2>
+<h3 id="111-venturi-2d-moodle" tabindex="-1">11.1 Venturi 2D (Moodle)</h3>
+<ul>
+<li><strong>Canal de 10 a 5 cm, 378 celdas</strong>, ~3 s de cómputo. Convergió en 44 iteraciones con residuo 1×10⁻⁴.</li>
+<li><strong>Verificaciones</strong>, en este orden: residuos → magnitudes globales → detalles de diseño.
+<ol>
+<li><strong>Continuidad:</strong> 0,5 m/s × 0,1 = 1 m/s × 0,05, con monitores en el <em>inlet</em> y el <em>outlet</em>.</li>
+<li><strong>Bernoulli:</strong> la presión total es constante en el eje del canal (<em>plot over line</em>) y deja de serlo cerca de las paredes.</li>
+<li><strong>Recirculación en la esquina</strong> por el ángulo abrupto.</li>
+</ol>
+</li>
+<li><strong>Mirar una iteración intermedia engaña:</strong> solo vale la última.</li>
+</ul>
+<h3 id="112-naca-0012-modulo-airfoil-de-simflow" tabindex="-1">11.2 NACA 0012 (módulo Airfoil de SimFlow)</h3>
+<ul>
+<li><strong>Activar <em>Help → Features → Airfoil</em></strong> y cargar el <code>.dat</code>. La malla es estructurada (25.000–65.000 celdas). El ángulo de ataque <strong>rota la malla</strong>: es lo mismo que girar el auto en el túnel para simular guiñada.</li>
+<li><strong>Setup:</strong>
+<ul>
+<li>Re = 6×10⁶ con <code>U = 6e6*1.5e-5/1</code> = 90 m/s;</li>
+<li>simpleFoam con k-ω SST;</li>
+<li><code>linearUpwind</code> para U y <code>upwind</code> para k y ω;</li>
+<li>5000 iteraciones, escribiendo cada 100 y guardando las 2 últimas.</li>
+</ul>
+</li>
+<li><strong>0°:</strong> convergió hacia la iteración ~890. <strong>C_D ≈ 0,01 y C_L ≈ 0</strong> (lo esperado para un perfil simétrico).
+<ul>
+<li>En celdas se ve que la primera celda no está en 0 (~60–68 de 90 m/s): <strong>la capa límite está modelada, no resuelta</strong>.</li>
+</ul>
+</li>
+<li><strong>25° y 20°:</strong> desprendimiento. Monitores y residuos oscilan, pero los residuos no bajan ni un orden: <strong>no confiable</strong>.
+<ul>
+<li>Los vórtices que se ven no hay que creerlos (con 3 celdas ya se &quot;inventa&quot; un vórtice); las fuerzas integradas son más confiables.</li>
+</ul>
+</li>
+<li><strong>−15°:</strong> sin desprendimiento, convergido.</li>
+<li><strong>Con OpenFOAM nativo y Python</strong> se pueden largar todos los ángulos de una vez; SimFlow no lo permite.</li>
+</ul>
+<h3 id="113-cilindro-2d-transitorio-snappyhexmesh-pimplefoam-laminar" tabindex="-1">11.3 Cilindro 2D transitorio (snappyHexMesh + pimpleFoam, laminar)</h3>
+<ul>
+<li><strong>Geometría:</strong> <span class="nolink">Geometrías/Clase 05 - cylinder_1.stl</span>, D = 1 m. Plato de x −10 a 80 m con celdas base de 1 m y cilindro en nivel 5 (~31 mm) con 5 capas.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Caso</th>
+<th>Malla</th>
+<th>Resultado</th>
+<th>Referencia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>S1, Re 10</strong> (U = 0,01 m/s, ν = 1×10⁻³, Δt = 1 s, Co ≈ 0,3)</td>
+<td>~2.600 celdas</td>
+<td>C_D = 3,37; separación a ~28–29°</td>
+<td>C_D 2,9–3,17 (5–15 % de error)</td>
+</tr>
+<tr>
+<td><strong>S2, Re 100</strong> (U = 0,1, Δt = 0,1 s)</td>
+<td>La misma malla</td>
+<td>C_D ≈ 1,31, pero <strong>C_L no oscila: falta malla</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>S3, Re 100</strong> con 3 cajas telescópicas (niveles 4, 3, 2)</td>
+<td>~16.600 celdas</td>
+<td><strong>C_L ±0,30, C_D ≈ 1,44 ± 0,009</strong></td>
+<td>C_D ≈ 1,35–1,43</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Lección:</strong> el C_D es muy benigno (con la malla horrible ya tenía ~8 % de error). Las oscilaciones del C_L exigen más malla.</li>
+</ul>
+<h3 id="114-mustang-2d-con-apendices-moodle-unidad-4" tabindex="-1">11.4 Mustang 2D con apéndices (Moodle, Unidad 4)</h3>
+<ul>
+<li><strong>Para abrirlo:</strong> las versiones nuevas de SimFlow no importan zips. Hay que descomprimirlo en <em><strong>Workspace/MyCases</strong></em> (la ruta está en <em>Settings</em>).</li>
+<li><strong>Malla 2D</strong> con refinamiento telescópico y y⁺ de 30–500; transitorio de ~3 s, con los residuos bajando más de 3 órdenes.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Configuración</th>
+<th>Resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sin spoiler</td>
+<td>Lift +1170 N, drag ~600 N, balance muy trasero</td>
+</tr>
+<tr>
+<td>Con spoiler trasero</td>
+<td>Lift −1600 N, drag ~780 N, balance ~68 % adelante</td>
+</tr>
+<tr>
+<td>Con <em>air dam</em></td>
+<td><strong>Más lift (error del 2D por el vórtice encajonado)</strong></td>
+</tr>
+<tr>
+<td>Difusor + splitter + spoiler</td>
+<td>C_D ≈ 0,41, C_L ≈ −1,68, balance ~80 % adelante</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Ejercicio del spoiler óptimo:</strong> el script del Moodle genera la STL del spoiler a partir de la altura y el ángulo, con la arista de contacto fija.
+<ul>
+<li>En SimFlow se borra la geometría vieja y se agrega la nueva (<em>Add new</em>); se malla, se corre, se anota y se repite, buscando la <strong>máxima −C_L/C_D</strong>.</li>
+<li>Si el problema no es estacionario, <strong>promediar el monitor</strong>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="115-validacion-jn153-contra-xfoil-0-re-10" tabindex="-1">11.5 Validación JN153 contra XFOIL (α = 0°, Re = 10⁶)</h3>
+<ul>
+<li><strong>Referencia de XFOIL:</strong> C_L ≈ 0,88 y C_D ≈ 0,0139.</li>
+<li><strong>Setup:</strong>
+<ul>
+<li>caso <code>JN153-aa0</code> (SimFlow no acepta guion bajo), cuerda de 1 m, perfil sin espejar;</li>
+<li>pimpleFoam con k-ω SST, U = 15,1 m/s;</li>
+<li>Δt = 1 ms, 3 s simulados.</li>
+</ul>
+</li>
+<li><strong>Malla por defecto:</strong> primera celda de 1 cm, largo mínimo de 4 mm en la nariz y máximo de 5 cm; ~11.000 celdas.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Primera celda</th>
+<th>C_L</th>
+<th>C_D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10 mm</td>
+<td>0,85 (−3 %)</td>
+<td>~0,024 (+85 %)</td>
+</tr>
+<tr>
+<td>5 mm</td>
+<td>~0,89–0,90 (+1 %)</td>
+<td>~0,022 (+60 %)</td>
+</tr>
+<tr>
+<td>1 mm</td>
+<td>sigue subiendo</td>
+<td>~0,017–0,02, todavía bajando</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Lecciones:</strong>
+<ul>
+<li><strong>el C_L es fácil, el C_D es exigente</strong> (con celdas gruesas la capa límite es &quot;más friccional&quot;);</li>
+<li>a 1,5 s no había convergido; a 3 s, sí;</li>
+<li>el y⁺ de la nariz subió al refinar (T §12.7).</li>
+</ul>
+</li>
+<li><strong>Próximos pasos:</strong> refinar la nariz (largo mínimo ~2 mm, primera celda ~0,25 mm) y pasar k y ω a 2.º orden, <strong>de a uno por vez</strong>. Después, repetir con el <strong>E420</strong>.</li>
+</ul>
+<h3 id="116-mustang-3d-mustang-studio-setup-s18" tabindex="-1">11.6 Mustang 3D (Mustang Studio, setup S18)</h3>
+<ul>
+<li><strong>Barrido del ala (S20 a S23, de −10° a +10°):</strong>
+<ul>
+<li>la carga va de ~360 a ~1.050 N, con más drag;</li>
+<li>más ala da balance más trasero (de ~0 a &gt; 100 %; a −10° hay lift atrás).</li>
+</ul>
+</li>
+<li><strong>Barrido de rake (0°, +1°, +2°):</strong> más carga, más drag y balance adelante (~35–60 %). A 2° el piso desprende.</li>
+<li><strong>Barrido de altura (50, 100, 150, 200 mm):</strong> más bajo da <strong>más carga y menos drag</strong>. Falta una corrida más para ver de qué lado del máximo están los puntos.</li>
+<li><strong>Velocidades de referencia (U∞ = 55 m/s):</strong> bajo el piso ~79–82 m/s; la primera celda del piso va a ~74 m/s aunque el piso se mueve a 55, lo que muestra que falta refinamiento ahí. La presión bajo el piso es de ~−1.400 Pa.</li>
+<li><strong>Cómo mostrar los resultados:</strong> <strong>Fz contra Fx</strong> (más carga y menos drag es abajo a la izquierda si la carga es negativa) y <strong>Fz contra balance</strong>. Primero <strong>balancear</strong> y después comparar.</li>
+<li><strong>Barrido opcional sugerido:</strong> altura del ala (−50, −10, −5, 0, 5, 10, 50 mm) mirando el balance.</li>
+<li><strong>Si se ve un comportamiento raro</strong> (desprendimiento, saltos), <strong>refinar en esa zona</strong> antes de concluir.</li>
+<li><strong>Todas las corridas de la familia S18</strong> (U = 55 m/s, medias de las iteraciones 1901–2000):</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Grupo</th>
+<th>Casos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Referencia</td>
+<td>S18: h = 100 mm, rake = ala = 0°, I = 10 %, VR = 500</td>
+</tr>
+<tr>
+<td>Ángulo del alerón</td>
+<td>S20 (−10°), S21 (−5°), S22 (+5°), S23 (+10°)</td>
+</tr>
+<tr>
+<td>Rake</td>
+<td>S24 (0,5°), S25 (1°), S26 (1,5°), S27 (2°)</td>
+</tr>
+<tr>
+<td>Altura</td>
+<td>S28 (50 mm), S29 (150 mm), S30 (200 mm)</td>
+</tr>
+<tr>
+<td>Turbulencia (pares I–VR)</td>
+<td>S31 (5 %, 100), S32 (1 %, 10)</td>
+</tr>
+<tr>
+<td>Turbulencia con ℓ_t = 0,30 m</td>
+<td>S37 (0,1 %, VR ≈ 738), S38 (1 %, ≈ 7379), S39 (10 %, ≈ 73 790)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Barrido de turbulencia:</strong>
+<ul>
+<li>S18, S31, S32 y S37, S38 caen a <strong>menos de 4 N</strong> de carga entre sí: no se puede medir.</li>
+<li><strong>S39</strong> (ν_t de entrada 73 000 veces la del aire) tiene <strong>~50 N más de drag</strong> que S31 (≈ 7 CV a 280 km/h) y ~10 kg de diferencia de carga.</li>
+</ul>
+</li>
+<li><strong>Refinamiento S18 contra S40:</strong> −2,77 N de drag, +0,92 N de carga y −0,23 puntos de balance. Una variación chica ante este cambio <strong>no demuestra independencia de malla</strong>.</li>
+</ul>
+<h3 id="117-aleron-main-flap-2d-simflow-makewing" tabindex="-1">11.7 Alerón main + flap 2D (SimFlow, <code>makeWing</code>)</h3>
+<ul>
+<li><strong>Caso de clase</strong> (§9.3): <strong>C_L = −1,67, C_D = 0,055</strong> (filmina). <strong>El flap desprende</strong> (se ve con velocidad y <em>Surface LIC</em>).</li>
+<li><strong>Cómo mejorarlo</strong> (el ejercicio de la filmina pide <strong>más eficiencia</strong>, no más carga): agregar un Gurney, bajar el ángulo del flap (de 30° a ~15°), usar un flap más plano o ajustar gap y solape.</li>
+</ul>
+<hr>
+<h2 id="12-ejercicios-y-trabajos-propuestos" tabindex="-1">12. Ejercicios y trabajos propuestos</h2>
+<ul>
+<li>[ ] <strong>Scripts de performance:</strong> graficar V_max contra C_D y completar el bucle de V_curva contra −C_L (T §6).</li>
+<li>[ ] <strong>NACA 0012:</strong> con tolerancias absolutas de 1×10⁻¹⁵, barrer α (incluidos 15°, 20° y 25°) y ver los tipos de convergencia.</li>
+<li>[ ] <strong>Cilindro:</strong> casos S1–S3, estudio de malla (base 90×10 → 180×20, ~64.000 celdas) y regímenes (Re 1, 10, 40, 100…), cuidando el Courant y el Fourier.</li>
+<li>[ ] <strong>Mustang 2D:</strong> casos de apéndices y ejercicio del spoiler óptimo.</li>
+<li>[ ] <strong>XFOIL:</strong> C_L–α y polar del NACA 0012 y del E420 a Re 10⁶.</li>
+<li>[ ] <strong>Validación del JN153</strong> (y del E420) en SimFlow contra XFOIL, con estudio de malla e y⁺.</li>
+<li>[ ] <strong>Mustang 3D (S18):</strong> barridos de ángulo del ala, rake y altura. Graficar Fz contra Fx y Fz contra balance, y balancear antes de comparar.</li>
+<li>[ ] <strong>ParaView:</strong> estados, presión en superficie, corte del ala, presión total, ángulo del flujo, streamlines (<em>forward</em> y <em>backward</em>, línea y esfera) y <em>Tube</em>.</li>
+<li>[ ] <strong>Paralelismo:</strong> medir con cuántos núcleos físicos deja de acelerar la PC propia.</li>
+<li>[ ] <strong>Avisarle a Horacio cuánto tardan las corridas,</strong> para que evalúe mallas más finas.</li>
+<li>[ ] <strong>Turbulencia de entrada:</strong> probar la calculadora de CFD-Online y mirar en ParaView ν_t, k y ω de una corrida propia (dónde nace k y dónde ω es alto).</li>
+<li>[ ] <strong>Main + flap 2D:</strong> generar el bicuerpo con <code>makeWing</code>, mallar con N_c ≈ 50 y h_w ≈ 0,005·c y proponer un cambio que <strong>aumente la eficiencia</strong> (§11.7).</li>
+<li>[ ] <strong><code>efectoSueloBL.py</code>:</strong> variar altura, velocidad e inclinación del piso y ver cuándo choca la capa límite con el suelo (T §10.2).</li>
+<li>[ ] <strong>TP integrador, entrega el 15 de noviembre</strong> (<span class="nolink">enunciados en Trabajos prácticos/TP2</span>):
+<ul>
+<li><strong>Ejercicio 1, aero activa:</strong>
+<ul>
+<li>alerón <strong>modo Z</strong> con <code>makeWing</code>: NACA 8416 (18 cm, 0°) + NACA 4418 (8 cm, 20°, h = 10 mm, solape = 10 mm), Gurney de 1,5 cm, sin endplate, envergadura 95 cm;</li>
+<li><strong>CFD 3D</strong> con simetría en z = 0; inlet, top, bottom y front a 1 m, outlet a 2 m; <strong>Δx = 0,25 m</strong> (el enunciado dice &quot;cm&quot; por error);</li>
+<li>~30 celdas por cuerda; 2 capas con ratio 2 y primera capa 0,25; Gurney en modo <em>baffle</em>;</li>
+<li>estacionario, k–ω SST, <code>linearUpwind</code> para U, 200 km/h, funciones de pared estándar;</li>
+<li><strong>modo X:</strong> rotar el flap 15° con origen en su borde de fuga, remallar y repetir;</li>
+<li><strong>sin simular de nuevo:</strong> reducción del drag en kgf a 300 km/h (escalar con V², T §5.2);</li>
+<li>informe con túnel, malla, residuos, monitores y cortes en z = 0 y z = 0,3.</li>
+</ul>
+</li>
+<li><strong>Ejercicio 2, Pareto del Mustang:</strong>
+<ul>
+<li>8 configuraciones válidas variando despeje, rake, posición e incidencia del alerón, dentro de una banda de balance de ±5 puntos;</li>
+<li>frontera de Pareto en −Fz contra Fx (T §14.3);</li>
+<li>en dos segmentos, simular el promedio de los parámetros de los extremos y compararlo con el promedio de las fuerzas;</li>
+<li>restricciones: despeje ≥ 100 mm, altura ≤ 1,4 m, x máx del alerón 4,4 m;</li>
+<li>malla S40 (§10.3).</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</main>
+<script>
+document.querySelectorAll('.toc a').forEach(a => a.addEventListener('click', () => document.body.classList.remove('toc-open')));
+const links = [...document.querySelectorAll('.toc a')];
+const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+const obs = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { links.forEach(l => l.classList.remove('active')); const a = map.get(e.target.id); if (a) { a.classList.add('active'); a.scrollIntoView({block: 'nearest'}); } }
+}), { rootMargin: '0px 0px -75% 0px' });
+document.querySelectorAll('main h2[id], main h3[id]').forEach(h => obs.observe(h));
+</script>
+</body>
+</html>
